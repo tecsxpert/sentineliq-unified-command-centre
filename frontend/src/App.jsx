@@ -1,14 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import ListPage from './pages/ListPage'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={
-          <div className="p-8 text-2xl font-bold text-blue-800">
-            Tool-74 — Unified Command Centre ✅
-          </div>
-        } />
+        <Route path="/" element={<ListPage />} />
       </Routes>
     </BrowserRouter>
   )
