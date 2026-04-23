@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 
 const DUMMY_DATA = [
@@ -17,6 +18,7 @@ const statusColors = {
 export default function ListPage() {
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     setTimeout(() => {
@@ -30,9 +32,11 @@ export default function ListPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-[#1B4F8A]">All Records</h1>
-        <button className="bg-[#1B4F8A] text-white px-4 py-2 rounded hover:bg-blue-800">
-          + New Record
-        </button>
+       <button
+       onClick={() => navigate('/create')}
+  className="bg-[#1B4F8A] text-white px-4 py-2 rounded hover:bg-blue-800">
+  + New Record
+</button>
       </div>
 
       {/* Table */}
