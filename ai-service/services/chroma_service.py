@@ -19,6 +19,6 @@ def add_data():
 def query_data(query_text):
     results = collection.query(
         query_texts=[query_text],
-        n_results=1
+        n_results=3
     )
     return results
