@@ -187,6 +187,13 @@ export default function ListPage() {
             >
               Next →
             </button>
+            
+            <button
+               onClick={() => navigate(`/records/${record.id}`)}
+                className="text-blue-600 hover:underline mr-3"
+                >
+                   View
+              </button>
           </div>
         </div>
       )}
