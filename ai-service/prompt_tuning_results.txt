@@ -1,0 +1,38 @@
+CATEGORY TEST
+
+1. App crashes when login - 9/10 (Correctly classified as Bug)
+2. Add dark mode feature - 9/10 (Correctly identified as Feature Request)
+3. UI looks very nice - 8/10 (Correct Feedback classification)
+4. App is slow and laggy - 8/10 (Correctly identified as Bug)
+5. Feature request for notifications  9/10 (Clear Feature Request)
+6. Login page not working - 9/10 (Correct Bug classification)
+7. Improve dashboard design - 7/10 (Correct category but format issue with markdown)
+8. App freezes sometimes - 9/10 (Correct Bug detection)
+9. Add multi-language support - 9/10 (Correct Feature Request)
+10. Performance is very bad - 8/10 (Correct Bug classification)
+
+QUERY TEST
+
+1. App crashes when login - 9/10 (Accurate answer using context)
+2. Add dark mode feature - 8/10 (Relevant answer but slightly extra explanation)
+3. UI looks very nice - 9/10 (Correct and concise response)
+4. App is slow and laggy - 7/10 (Limited context, response acceptable)
+5. Feature request for notifications - 7/10 (Correct but context not fully available)
+6. Login page not working - 9/10 (Accurate reasoning using context)
+7. Improve dashboard design - 8/10 (Good explanation with suggestions)
+8. App freezes sometimes - 8/10 (Reasonable inference from context)
+9. Add multi-language support - 7/10 (Correctly identified missing context)
+10. Performance is very bad - 8/10 (Good interpretation of issue)
+
+IMPROVEMENTS MADE
+
+-> Updated prompts to remove markdown (``` issue)
+-> Added strict rules for JSON-only output
+-> Improved clarity of classification instructions
+-> Ensured consistent output format across all responses
+
+FINAL RESULT
+
+*All prompts tested with 10 real inputs.*
+*Accuracy improved and outputs are consistently structured.*
+*All responses are now above acceptable threshold (≥7/10).*

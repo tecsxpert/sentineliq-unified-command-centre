@@ -5,23 +5,30 @@ client = GroqClient()
 def categorise_text(user_input):
     try:
         prompt = f"""
-        Classify the following text into one of these categories:
-        Bug, Feature Request, Feedback, Other.
+Classify the following text into EXACTLY ONE category:
 
-        Also provide:
-        - confidence (between 0 and 1)
-        - reasoning
+Categories:
+- Bug
+- Feature Request
+- Feedback
+- Other
 
-        Return ONLY in this JSON format:
-        {{
-            "category": "",
-            "confidence": 0.0,
-            "reasoning": ""
-        }}
+STRICT RULES:
+- Do NOT use markdown
+- Do NOT use ```
+- Return ONLY valid JSON
+- Do NOT add any extra text
 
-        Text:
-        {user_input}
-        """
+Format:
+{{
+    "category": "",
+    "confidence": 0.0,
+    "reasoning": ""
+}}
+
+Text:
+{user_input}
+"""
 
         response = client.generate_response(prompt)
 

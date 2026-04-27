@@ -6,41 +6,47 @@ client = GroqClient()
 
 def query_with_context(user_question):
     try:
-        # Step 1: Get top results from ChromaDB
+        #Step 1: Get top 3 results
         results = query_data(user_question)
-
         documents = results.get("documents", [[]])[0]
 
-        # Step 2: Prepare context
+        #Step 2: Prepare context
         context = "\n".join(documents)
 
-        # Step 3: Create prompt
+        #Step 3: Prompt
         prompt = f"""
-        Use the following context to answer the question.
+Answer the question using ONLY the provided context.
 
-        Context:
-        {context}
+Context:
+{context}
 
-        Question:
-        {user_question}
+Question:
+{user_question}
 
-        Return ONLY in this JSON format:
-        {{
-            "answer": ""
-        }}
-        """
+STRICT RULES:
+- Do NOT use markdown
+- Do NOT use ```
+- Do NOT add extra explanation
+- Use only the context
+- Return ONLY valid JSON
 
-        # Step 4: Call Groq
+Format:
+{{
+    "answer": ""
+}}
+"""
+
+        #Step 4: Call Groq
         response = client.generate_response(prompt)
 
-        # Step 5: Extract clean answer
+        #Step 5: Extract clean answer
         try:
             parsed = json.loads(response)
             answer_text = parsed.get("answer", response)
         except:
             answer_text = response
 
-        # Step 6: Return final output
+        #Step 6: Return final output
         return {
             "answer": answer_text,
             "sources": documents
