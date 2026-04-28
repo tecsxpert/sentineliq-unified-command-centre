@@ -2,6 +2,7 @@ import os
 import time
 from groq import Groq
 from dotenv import load_dotenv
+from routes.health import record_response_time
 
 # Load environment variables
 load_dotenv()
@@ -17,12 +18,19 @@ class GroqClient:
 
         for attempt in range(retries):
             try:
+                start_time = time.time()  # start timer
+
                 response = self.client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[
                         {"role": "user", "content": prompt}
                     ]
                 )
+
+                end_time = time.time()  # end timer
+
+                # record response time
+                record_response_time(end_time - start_time)
 
                 return response.choices[0].message.content
 
