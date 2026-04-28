@@ -3,13 +3,18 @@ server:
 
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: 123456
+  spring:
+    security:
+      user:
+        name: user
+        password: user
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
 
   flyway:
@@ -19,12 +24,19 @@ spring:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
 
-  mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+#  mail:
+#    host: ${MAIL_HOST}
+#    port: ${MAIL_PORT}
+#    username: ${MAIL_USERNAME}
+#    password: ${MAIL_PASSWORD}
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
+
+

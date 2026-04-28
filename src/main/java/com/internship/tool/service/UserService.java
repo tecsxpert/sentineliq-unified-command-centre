@@ -5,7 +5,8 @@ import com.internship.tool.exception.InvalidInputException;
 import com.internship.tool.exception.ResourceNotFoundException;
 import com.internship.tool.repository.UserRepository;
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Service
@@ -32,8 +33,8 @@ public class UserService {
     }
 
     // GET ALL USERS
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     // GET USER BY ID
