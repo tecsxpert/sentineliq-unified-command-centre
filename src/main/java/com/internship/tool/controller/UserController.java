@@ -1,0 +1,39 @@
+package com.internship.tool.controller;
+
+import com.internship.tool.entity.User;
+import com.internship.tool.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    // GET ALL (PAGINATED)
+    @GetMapping("/all")
+    public ResponseEntity<Page<User>> getAllUsers(Pageable pageable) {
+        return ResponseEntity.ok(userService.getAllUsers(pageable));
+    }
+
+    // GET BY ID
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUser(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    // CREATE USER
+    @PostMapping("/create")
+    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userService.createUser(user));
+    }
+}
