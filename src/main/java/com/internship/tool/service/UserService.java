@@ -16,11 +16,12 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, EmailService emailService) {
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
-
     // CREATE USER
     @CacheEvict(value = "users", allEntries = true)
     public User createUser(User user) {
@@ -33,7 +34,12 @@ public class UserService {
             throw new InvalidInputException("Email is required");
         }
 
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+
+        // 📧 Send email
+        emailService.sendUserCreatedEmail(saved.getEmail(), saved.getName());
+
+        return saved;
     }
 
     // GET ALL USERS
@@ -60,5 +66,8 @@ public class UserService {
     @Cacheable(value = "users")
     public List<User> getAll() {
         System.out.println("🔥 Fetching from DB...");
-        return userRepository.findAll();    }
+        return userRepository.findAll();
+    }
+
+
 }
