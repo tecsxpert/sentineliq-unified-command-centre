@@ -27,6 +27,14 @@ spring:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
 
+  cache:
+    type: redis
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 #  mail:
 #    host: ${MAIL_HOST}
 #    port: ${MAIL_PORT}

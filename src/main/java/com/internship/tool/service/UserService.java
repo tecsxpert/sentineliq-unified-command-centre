@@ -7,6 +7,9 @@ import com.internship.tool.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+
 import java.util.List;
 
 @Service
@@ -19,6 +22,7 @@ public class UserService {
     }
 
     // CREATE USER
+    @CacheEvict(value = "users", allEntries = true)
     public User createUser(User user) {
 
         if (user.getName() == null || user.getName().isEmpty()) {
@@ -33,7 +37,9 @@ public class UserService {
     }
 
     // GET ALL USERS
+    @Cacheable(value = "users")
     public Page<User> getAllUsers(Pageable pageable) {
+        System.out.println("🔥 Fetching from DB...");
         return userRepository.findAll(pageable);
     }
 
@@ -45,8 +51,14 @@ public class UserService {
     }
 
     // DELETE USER
+    @CacheEvict(value = "users", allEntries = true)
+
     public void deleteUser(Long id) {
         User user = getUserById(id);
         userRepository.delete(user);
     }
+    @Cacheable(value = "users")
+    public List<User> getAll() {
+        System.out.println("🔥 Fetching from DB...");
+        return userRepository.findAll();    }
 }
