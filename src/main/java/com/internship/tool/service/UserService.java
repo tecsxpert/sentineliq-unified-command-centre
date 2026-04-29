@@ -33,6 +33,10 @@ public class UserService {
         if (user.getEmail() == null || user.getEmail().isEmpty()) {
             throw new InvalidInputException("Email is required");
         }
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            throw new InvalidInputException("Password is required");
+        }
+
 
         User saved = userRepository.save(user);
 
