@@ -24,8 +24,11 @@ public class GlobalExceptionHandler {
 
     // 🔴 500
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
+    public ResponseEntity<?> handleGeneric(Exception ex) {
+
+        ex.printStackTrace();
+
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 
     // Common JSON

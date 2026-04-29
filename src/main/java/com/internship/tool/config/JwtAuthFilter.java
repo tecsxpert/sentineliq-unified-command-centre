@@ -34,7 +34,7 @@ public class JwtAuthFilter implements Filter {
 
         String path = req.getRequestURI();
 
-        if (path.startsWith("/auth")) {
+        if (path.startsWith("/auth") || path.startsWith("/upload") || path.startsWith("/files")) {
             chain.doFilter(request, response);
             return;
         }
