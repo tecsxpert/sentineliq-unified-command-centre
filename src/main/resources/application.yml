@@ -1,16 +1,19 @@
 server:
   port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
 
 spring:
   datasource:
     url: jdbc:h2:mem:testdb
     username: sa
     password: 123456
-  spring:
-    security:
-      user:
-        name: user
-        password: user
+
+  security:
+    user:
+      name: user
+      password: user
 
   jpa:
     hibernate:
@@ -30,10 +33,10 @@ spring:
 #    username: ${MAIL_USERNAME}
 #    password: ${MAIL_PASSWORD}
 
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
-      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+  #autoconfigure:
+    #exclude:
+      #- org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+      #-org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 jwt:
   secret: ${JWT_SECRET}
