@@ -41,7 +41,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: akhivenkatesh44@gmail.com
-    password: cwqmpuqvnlmrcery
+    password: ${EMAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -54,16 +54,6 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
-#  mail:
-#    host: ${MAIL_HOST}
-#    port: ${MAIL_PORT}
-#    username: ${MAIL_USERNAME}
-#    password: ${MAIL_PASSWORD}
-
-  #autoconfigure:
-    #exclude:
-      #- org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
-      #-org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 jwt:
   secret: ${JWT_SECRET}
