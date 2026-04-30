@@ -47,8 +47,13 @@ def security_middleware():
                     }), 400
                 
                 sanitized = sanitize_input(value)
-                if sanitized != value:
-                    data[key] = sanitized
+                
+                # Apply PII scrubbing
+                from middleware.pii_scrubber import scrub_pii
+                scrubbed = scrub_pii(sanitized)
+                
+                if scrubbed != value:
+                    data[key] = scrubbed
                     modified = True
         
         if modified:

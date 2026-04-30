@@ -41,7 +41,7 @@ public class AiServiceClient {
             Map<String, String> request = new HashMap<>();
             request.put("text", text);
             
-            log.info("Calling AI service at {}{} with text: {}", aiServiceUrl, endpoint, text);
+            log.info("Calling AI service at {}{} (payload size: {})", aiServiceUrl, endpoint, text != null ? text.length() : 0);
             
             Map<String, Object> response = restTemplate.postForObject(aiServiceUrl + endpoint, request, Map.class);
             
