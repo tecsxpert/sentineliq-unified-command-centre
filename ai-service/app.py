@@ -14,6 +14,10 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# Initialize Limiter
+from extensions.limiter import limiter
+limiter.init_app(app)
+
 # Register Blueprints
 app.register_blueprint(ai_bp)
 

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, g
 import time
 import json
 from services.groq_client import GroqClient
+from extensions.limiter import limiter
 
 ai_bp = Blueprint('ai', __name__)
 client = GroqClient()
@@ -60,5 +61,6 @@ def categorise():
     return jsonify({"message": "Endpoint not yet implemented"}), 501
 
 @ai_bp.route('/generate-report', methods=['POST'])
+@limiter.limit("10 per minute")
 def generate_report():
     return jsonify({"message": "Endpoint not yet implemented"}), 501
