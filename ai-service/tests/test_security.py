@@ -6,6 +6,15 @@ class TestSecurity(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
 
+    def test_no_auth(self):
+        response = self.client.post('/describe', json={"text": "hello"})
+        self.assertEqual(response.status_code, 401)
+
+    def test_invalid_auth(self):
+        headers = {"Authorization": "Bearer invalid-token"}
+        response = self.client.post('/describe', json={"text": "hello"}, headers=headers)
+        self.assertEqual(response.status_code, 401)
+
     def test_xss_sanitization(self):
         payload = {"text": "<script>alert('xss')</script> Hello"}
         response = self.client.post('/describe', json=payload)

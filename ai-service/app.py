@@ -22,7 +22,10 @@ limiter.init_app(app)
 app.register_blueprint(ai_bp)
 
 # Register Middleware
+from middleware.auth import auth_middleware
 from middleware.security import security_middleware
+
+app.before_request(auth_middleware)
 app.before_request(security_middleware)
 
 @app.after_request
