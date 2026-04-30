@@ -32,7 +32,10 @@ Text:
 
         response = client.generate_response(prompt)
 
-        return response
+        return {
+            "result": response["response"],
+            "meta": response["meta"]
+        }
 
     except Exception as e:
         return {
