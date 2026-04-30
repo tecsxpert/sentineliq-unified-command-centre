@@ -6,12 +6,16 @@ from dotenv import load_dotenv
 
 # Import routes
 from routes.health import get_health
+from routes.ai_routes import ai_bp
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Register Blueprints
+app.register_blueprint(ai_bp)
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -21,22 +25,6 @@ def health_check():
         "timestamp": time.time(),
         "data": health_data
     })
-
-@app.route('/describe', methods=['POST'])
-def describe():
-    return jsonify({"message": "Endpoint not yet implemented"}), 501
-
-@app.route('/recommend', methods=['POST'])
-def recommend():
-    return jsonify({"message": "Endpoint not yet implemented"}), 501
-
-@app.route('/categorise', methods=['POST'])
-def categorise():
-    return jsonify({"message": "Endpoint not yet implemented"}), 501
-
-@app.route('/generate-report', methods=['POST'])
-def generate_report():
-    return jsonify({"message": "Endpoint not yet implemented"}), 501
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
