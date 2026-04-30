@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 import time
 import json
 from services.groq_client import GroqClient
@@ -6,9 +6,12 @@ from services.groq_client import GroqClient
 ai_bp = Blueprint('ai', __name__)
 client = GroqClient()
 
+def get_request_data():
+    return getattr(g, 'sanitized_data', request.get_json())
+
 @ai_bp.route('/describe', methods=['POST'])
 def describe():
-    data = request.get_json()
+    data = get_request_data()
     if not data or 'text' not in data:
         return jsonify({"error": "Missing 'text' in request body"}), 400
 
@@ -31,7 +34,7 @@ def describe():
 
 @ai_bp.route('/recommend', methods=['POST'])
 def recommend():
-    data = request.get_json()
+    data = get_request_data()
     if not data or 'text' not in data:
         return jsonify({"error": "Missing 'text' in request body"}), 400
 
