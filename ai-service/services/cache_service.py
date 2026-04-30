@@ -18,21 +18,27 @@ def generate_key(prompt):
 
 def get_cache(prompt):
     global cache_hits, cache_misses
+    try:
+        key = generate_key(prompt)
+        data = r.get(key)
 
-    key = generate_key(prompt)
-    data = r.get(key)
+        if data:
+            cache_hits += 1
+            return json.loads(data)
 
-    if data:
-        cache_hits += 1
-        return json.loads(data)
-
-    cache_misses += 1
+        cache_misses += 1
+    except Exception as e:
+        print(f"Redis Error (GET): {e}")
+    
     return None
 
 
 def set_cache(prompt, response):
-    key = generate_key(prompt)
-    r.setex(key, CACHE_TTL, json.dumps(response))
+    try:
+        key = generate_key(prompt)
+        r.setex(key, CACHE_TTL, json.dumps(response))
+    except Exception as e:
+        print(f"Redis Error (SET): {e}")
 
 
 def get_cache_stats():

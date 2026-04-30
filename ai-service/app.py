@@ -25,6 +25,15 @@ app.register_blueprint(ai_bp)
 from middleware.security import security_middleware
 app.before_request(security_middleware)
 
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Content-Security-Policy'] = "default-src 'self'"
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
 @app.route('/health', methods=['GET'])
 def health_check():
     health_data = get_health()
