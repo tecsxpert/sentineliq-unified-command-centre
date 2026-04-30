@@ -20,16 +20,16 @@ def describe():
     prompt = f"Describe the following security incident or log entry in detail:\n\n{user_input}"
     
     start_time = time.time()
-    response = client.generate_response(prompt)
+    response, is_cached = client.generate_response(prompt)
     end_time = time.time()
     
     return jsonify({
         "result": response,
         "metadata": {
-            "confidence": 0.85,  # Mocked for now
+            "confidence": 0.85,
             "model_used": "llama-3.3-70b-versatile",
             "response_time_ms": int((end_time - start_time) * 1000),
-            "cached": False  # Handled by GroqClient but we can refine this later
+            "cached": is_cached
         }
     })
 
@@ -43,16 +43,16 @@ def recommend():
     prompt = f"Provide security recommendations for the following scenario:\n\n{user_input}"
     
     start_time = time.time()
-    response = client.generate_response(prompt)
+    response, is_cached = client.generate_response(prompt)
     end_time = time.time()
     
     return jsonify({
         "result": response,
         "metadata": {
-            "confidence": 0.90,  # Mocked for now
+            "confidence": 0.90,
             "model_used": "llama-3.3-70b-versatile",
             "response_time_ms": int((end_time - start_time) * 1000),
-            "cached": False
+            "cached": is_cached
         }
     })
 
@@ -71,7 +71,7 @@ Text: {user_input}
 """
     
     start_time = time.time()
-    response = client.generate_response(prompt)
+    response, is_cached = client.generate_response(prompt)
     end_time = time.time()
     
     try:
@@ -85,7 +85,7 @@ Text: {user_input}
             "confidence": parsed.get("confidence", 0.0),
             "model_used": "llama-3.3-70b-versatile",
             "response_time_ms": int((end_time - start_time) * 1000),
-            "cached": False
+            "cached": is_cached
         }
     })
 
@@ -100,7 +100,7 @@ def generate_report():
     prompt = f"Generate a comprehensive security report based on the following logs/events:\n\n{user_input}\n\nInclude: Summary, Risk Level, and Action Plan."
     
     start_time = time.time()
-    response = client.generate_response(prompt)
+    response, is_cached = client.generate_response(prompt)
     end_time = time.time()
     
     return jsonify({
@@ -109,6 +109,6 @@ def generate_report():
             "confidence": 0.95,
             "model_used": "llama-3.3-70b-versatile",
             "response_time_ms": int((end_time - start_time) * 1000),
-            "cached": False
+            "cached": is_cached
         }
     })
