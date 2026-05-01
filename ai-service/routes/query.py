@@ -1,47 +1,46 @@
-import json
+from fastapi import APIRouter
 from services.groq_client import GroqClient
-from services.chroma_service import query_data
 
+router = APIRouter()
 client = GroqClient()
 
-def query_with_context(user_question):
-    try:
-        context = "The app crashes when I login. The UI looks clean and modern. Feature request: add dark mode."
+@router.post("/query")
+def query_api(data: dict):
+    user_question = data.get("question", "")
 
-        prompt = f"""
-        You are an AI assistant.
+    context = "The app crashes when I login. The UI looks clean and modern. Feature request: add dark mode."
 
-        STRICT RULES:
-        - Answer ONLY using the provided context
-        - If answer is not found, say: "No relevant information found"
-        - Do NOT guess or assume
-        - Keep answer short and clear
+    prompt = f"""
+    You are an AI assistant.
 
-        Context:
-        {context}
+    STRICT RULES:
+    - Answer ONLY using the provided context
+    - If answer is not found, say: "No relevant information found"
+    - Do NOT guess or assume
+    - Keep answer short and clear
 
-        Question:
-        {user_question}
+    Context:
+    {context}
 
-        Return only the answer.
-        """
+    Question:
+    {user_question}
 
-        result = client.generate_response(prompt)
+    Return only the answer.
+    """
 
-        answer = result.get("response", "")
-        meta = result.get("meta", {})
+    result = client.generate_response(prompt)
 
-        sources = [
-            "The app crashes when I login",
-            "The UI looks clean and modern",
-            "Feature request: add dark mode"
-        ]
+    answer = result.get("response", "")
+    meta = result.get("meta", {})
 
-        return {
-            "answer": answer,
-            "sources": sources,
-            "meta": meta
-        }
+    sources = [
+        "The app crashes when I login",
+        "The UI looks clean and modern",
+        "Feature request: add dark mode"
+    ]
 
-    except Exception as e:
-        return {"error": str(e)}
+    return {
+        "answer": answer,
+        "sources": sources,
+        "meta": meta
+    }
