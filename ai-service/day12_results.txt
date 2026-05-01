@@ -1,0 +1,23 @@
+==== PERFORMANCE RESULTS ====
+
+Categorise Endpoint:
+p50: 6.0 ms
+p95: 7.02 ms
+p99: 25.0 ms
+
+Query Endpoint:
+p50: 6.01 ms
+p95: 14.0 ms
+p99: 59.08 ms
+
+Report Endpoint:
+p50: 8.0 ms
+p95: 10.54 ms
+p99: 36.55 ms
+
+
+==== ANALYSIS ====
+
+-> All endpoints are well below target threshold (500 ms)
+-> System performance is fast and stable
+-> No optimization required
