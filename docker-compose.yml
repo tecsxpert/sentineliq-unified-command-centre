@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: sentineliq-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: sentineliq-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend/tool
+    container_name: sentineliq-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  ai-service:
+    build: ./ai-service
+    container_name: sentineliq-ai
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - backend
+
+  frontend:
+    build: ./frontend
+    container_name: sentineliq-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
