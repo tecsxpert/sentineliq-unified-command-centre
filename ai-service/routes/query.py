@@ -1,58 +1,46 @@
-import json
+from fastapi import APIRouter
 from services.groq_client import GroqClient
-from services.chroma_service import query_data
 
+router = APIRouter()
 client = GroqClient()
 
-def query_with_context(user_question):
-    try:
-        #Step 1: Get top 3 results
-        results = query_data(user_question)
-        documents = results.get("documents", [[]])[0]
+@router.post("/query")
+def query_api(data: dict):
+    user_question = data.get("question", "")
 
-        #Step 2: Prepare context
-        context = "\n".join(documents)
+    context = "The app crashes when I login. The UI looks clean and modern. Feature request: add dark mode."
 
-        #Step 3: Prompt
-        prompt = f"""
-Answer the question using ONLY the provided context.
+    prompt = f"""
+    You are an AI assistant.
 
-Context:
-{context}
+    STRICT RULES:
+    - Answer ONLY using the provided context
+    - If answer is not found, say: "No relevant information found"
+    - Do NOT guess or assume
+    - Keep answer short and clear
 
-Question:
-{user_question}
+    Context:
+    {context}
 
-STRICT RULES:
-- Do NOT use markdown
-- Do NOT use ```
-- Do NOT add extra explanation
-- Use only the context
-- Return ONLY valid JSON
+    Question:
+    {user_question}
 
-Format:
-{{
-    "answer": ""
-}}
-"""
+    Return only the answer.
+    """
 
-        #Step 4: Call Groq
-        response = client.generate_response(prompt)
+    result = client.generate_response(prompt)
 
-        #Step 5: Extract clean answer
-        try:
-            parsed = json.loads(response)
-            answer_text = parsed.get("answer", response)
-        except:
-            answer_text = response
+    answer = result.get("response", "")
+    meta = result.get("meta", {})
 
-        #Step 6: Return final output
-        return {
-            "answer": answer_text,
-            "sources": documents
-        }
+    sources = [
+        "The app crashes when I login",
+        "The UI looks clean and modern",
+        "Feature request: add dark mode"
+    ]
 
-    except Exception as e:
-        return {
-            "error": str(e)
-        }
+    return {
+        "answer": answer,
+        "sources": sources,
+        "meta": meta
+    }

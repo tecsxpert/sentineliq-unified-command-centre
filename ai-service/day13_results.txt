@@ -1,0 +1,14 @@
+===== FALLBACK TEST =====
+
+Normal Case:
+- AI response returned successfully
+- is_fallback: false
+
+Failure Case:
+- API key removed to simulate error
+- Fallback response returned
+- is_fallback: true
+
+===== RESULT =====
+
+Fallback mechanism working correctly
