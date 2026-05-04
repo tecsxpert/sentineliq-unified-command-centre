@@ -1,6 +1,10 @@
 import json
+from flask import Blueprint, jsonify, request
 from services.groq_client import GroqClient
 from services.chroma_service import query_data
+
+# Create blueprint
+query_bp = Blueprint('query', __name__)
 
 client = GroqClient()
 
@@ -56,3 +60,37 @@ Format:
         return {
             "error": str(e)
         }
+
+
+@query_bp.route('/query', methods=['POST'])
+def query_endpoint():
+    """
+    Query endpoint for RAG-based question answering
+    
+    Request JSON:
+    {
+        "question": "Your question here"
+    }
+    
+    Response JSON:
+    {
+        "answer": "Answer text",
+        "sources": ["source 1", "source 2", ...]
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data or 'question' not in data:
+            return jsonify({"error": "Missing 'question' field"}), 400
+        
+        question = data['question'].strip()
+        
+        if not question:
+            return jsonify({"error": "Question cannot be empty"}), 400
+        
+        result = query_with_context(question)
+        return jsonify(result), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
