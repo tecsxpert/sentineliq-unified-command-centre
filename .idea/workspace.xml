@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b9923cbf-2132-4629-b2e7-07788eb82c64" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/tool/target/classes/db/migration/V4__performance.sql" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3CzIYLH8PfYA2eNMPGdmjbw8oKR" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "day14-java-dev2-performance",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Darshan/Desktop/sentineliq-unified-command-centre/backend/tool/target/classes/com/internship/tool/repository",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Darshan\Desktop\sentineliq-unified-command-centre\backend\tool\target\classes\com\internship\tool\repository" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b9923cbf-2132-4629-b2e7-07788eb82c64" name="Changes" comment="" />
+      <created>1777382022632</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1777382022632</updated>
+      <workItem from="1777382033044" duration="3329000" />
+      <workItem from="1777454715134" duration="3490000" />
+      <workItem from="1777458374807" duration="5242000" />
+      <workItem from="1777469102227" duration="429000" />
+      <workItem from="1777528598477" duration="331000" />
+      <workItem from="1777529001072" duration="5175000" />
+      <workItem from="1777557471296" duration="70000" />
+      <workItem from="1777642441328" duration="1083000" />
+      <workItem from="1777703787417" duration="3744000" />
+      <workItem from="1777871359086" duration="1526000" />
+      <workItem from="1777877185626" duration="157000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
