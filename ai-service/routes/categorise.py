@@ -30,9 +30,15 @@ Text:
 {user_input}
 """
 
-        response = client.generate_response(prompt)
+        result = client.generate_response(prompt)
+        
+        response = result.get("response", "")
+        meta = result.get("meta", {})
 
-        return response
+        return {
+            "response": response,
+            "meta": meta
+        } 
 
     except Exception as e:
         return {
