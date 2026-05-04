@@ -13,16 +13,19 @@ class GroqClient:
 
     def __init__(self):
         self.api_key = os.getenv("GROQ_API_KEY")
-        self.client = Groq(api_key=self.api_key)
+        self.client = Groq(api_key=self.api_key) if self.api_key else None
 
     def generate_response(self, prompt, use_cache=True):
+        if not self.api_key:
+            return f"[MOCK RESPONSE] Since GROQ_API_KEY is missing, here is a placeholder for: {prompt[:50]}...", False
+
         retries = 3
 
         # 🔥 STEP 1: Check cache
         if use_cache:
             cached = get_cache(prompt)
             if cached:
-                return cached
+                return cached, True
 
         # 🔥 STEP 2: Call Groq if not cached
         for attempt in range(retries):
@@ -44,7 +47,7 @@ class GroqClient:
                 if use_cache:
                     set_cache(prompt, result)
 
-                return result
+                return result, False
 
             except Exception as e:
                 print(f"Error: {e}")
@@ -53,4 +56,4 @@ class GroqClient:
                     print("Retrying...")
                     time.sleep(2)
                 else:
-                    return "Error: Unable to get response"
+                    return "Error: Unable to get response", False
