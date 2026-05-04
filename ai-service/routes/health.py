@@ -1,5 +1,9 @@
 import time
+from flask import Blueprint, jsonify
 from services.chroma_service import collection
+
+# Create blueprint
+health_bp = Blueprint('health', __name__)
 
 # Track app start time
 start_time = time.time()
@@ -38,3 +42,10 @@ def get_health():
         return {
             "error": str(e)
         }
+
+
+@health_bp.route('/health', methods=['GET'])
+def health_endpoint():
+    """Health check endpoint"""
+    result = get_health()
+    return jsonify(result)
