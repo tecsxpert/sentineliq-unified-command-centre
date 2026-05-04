@@ -22,7 +22,7 @@ class GroqClient:
         if use_cache:
             cached = get_cache(prompt)
             if cached:
-                return cached
+                return cached, True
 
         # 🔥 STEP 2: Call Groq if not cached
         for attempt in range(retries):
@@ -44,7 +44,7 @@ class GroqClient:
                 if use_cache:
                     set_cache(prompt, result)
 
-                return result
+                return result, False
 
             except Exception as e:
                 print(f"Error: {e}")
@@ -53,4 +53,4 @@ class GroqClient:
                     print("Retrying...")
                     time.sleep(2)
                 else:
-                    return "Error: Unable to get response"
+                    return "Error: Unable to get response", False
