@@ -38,6 +38,28 @@ public class User {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    /**
+     * AI-generated analysis of user profile
+     * Populated asynchronously after user creation
+     * Can be null if AI service is unavailable
+     */
+    @Column(name = "ai_analysis", columnDefinition = "TEXT")
+    private String aiAnalysis;
+
+    /**
+     * Status of AI analysis processing
+     * Values: PENDING, COMPLETED, FAILED, SKIPPED
+     */
+    @Column(name = "ai_analysis_status")
+    @Enumerated(EnumType.STRING)
+    private AiAnalysisStatus aiAnalysisStatus;
+
+    /**
+     * Timestamp when AI analysis was completed
+     */
+    @Column(name = "ai_analysis_completed_at")
+    private LocalDateTime aiAnalysisCompletedAt;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -45,4 +67,24 @@ public class User {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    /**
+     * AI Analysis Status Enum
+     */
+    public enum AiAnalysisStatus {
+        PENDING("Waiting for AI analysis"),
+        COMPLETED("AI analysis completed"),
+        FAILED("AI analysis failed"),
+        SKIPPED("AI analysis skipped");
+
+        private final String description;
+
+        AiAnalysisStatus(String description) {
+            this.description = description;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+    }
 }

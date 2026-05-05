@@ -28,12 +28,16 @@ from routes.query import query_bp
 from routes.categorise import categorise_bp
 from routes.describe import describe_bp
 from routes.recommend import recommend_bp
+from routes.rag import rag_bp
+from routes.report import report_bp
 
 app.register_blueprint(health_bp, url_prefix='/api/ai')
 app.register_blueprint(query_bp, url_prefix='/api/ai')
 app.register_blueprint(categorise_bp, url_prefix='/api/ai')
 app.register_blueprint(describe_bp, url_prefix='/api/ai')
 app.register_blueprint(recommend_bp, url_prefix='/api/ai')
+app.register_blueprint(rag_bp, url_prefix='/api/ai')
+app.register_blueprint(report_bp, url_prefix='/api/ai')
 
 
 # ==================== ROOT ENDPOINT ====================
@@ -50,7 +54,22 @@ def root():
             "query": "POST /api/ai/query",
             "categorise": "POST /api/ai/categorise",
             "describe": "POST /api/ai/describe",
-            "recommend": "POST /api/ai/recommend"
+            "recommend": "POST /api/ai/recommend",
+            "rag": {
+                "health": "GET /api/ai/rag/health",
+                "upload": "POST /api/ai/rag/upload",
+                "retrieve": "POST /api/ai/rag/retrieve",
+                "stats": "GET /api/ai/rag/stats",
+                "clear": "DELETE /api/ai/rag/clear",
+                "export": "GET /api/ai/rag/export"
+            },
+            "report": {
+                "generate": "POST /api/ai/generate-report",
+                "template": "GET /api/ai/generate-report/template",
+                "types": "GET /api/ai/generate-report/types",
+                "preview": "POST /api/ai/generate-report/preview",
+                "compare": "POST /api/ai/generate-report/compare"
+            }
         }
     })
 
