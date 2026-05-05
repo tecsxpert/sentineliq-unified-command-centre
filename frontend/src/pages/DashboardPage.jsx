@@ -1,10 +1,16 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend
-} from 'recharts'
-import API from '../services/api'
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import API from "../services/api";
 
 // Dummy stats until backend is ready
 const DUMMY_STATS = {
@@ -12,28 +18,28 @@ const DUMMY_STATS = {
   completed: 8,
   inProgress: 10,
   notStarted: 6,
-}
+};
 
 const DUMMY_CHART_DATA = [
-  { name: 'Bug', completed: 3, inProgress: 2, notStarted: 1 },
-  { name: 'Feature', completed: 2, inProgress: 4, notStarted: 2 },
-  { name: 'DevOps', completed: 1, inProgress: 2, notStarted: 1 },
-  { name: 'Security', completed: 1, inProgress: 1, notStarted: 1 },
-  { name: 'Docs', completed: 1, inProgress: 1, notStarted: 1 },
-]
+  { name: "Bug", completed: 3, inProgress: 2, notStarted: 1 },
+  { name: "Feature", completed: 2, inProgress: 4, notStarted: 2 },
+  { name: "DevOps", completed: 1, inProgress: 2, notStarted: 1 },
+  { name: "Security", completed: 1, inProgress: 1, notStarted: 1 },
+  { name: "Docs", completed: 1, inProgress: 1, notStarted: 1 },
+];
 
 export default function DashboardPage() {
-  const navigate = useNavigate()
-  const [stats, setStats] = useState(null)
-  const [chartData, setChartData] = useState([])
-  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate();
+  const [stats, setStats] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    fetchStats();
+  }, []);
 
   const fetchStats = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       // Uncomment when backend is ready:
       // const res = await API.get('/api/items/stats')
@@ -41,15 +47,15 @@ export default function DashboardPage() {
       // setChartData(res.data.byCategory)
 
       setTimeout(() => {
-        setStats(DUMMY_STATS)
-        setChartData(DUMMY_CHART_DATA)
-        setLoading(false)
-      }, 800)
+        setStats(DUMMY_STATS);
+        setChartData(DUMMY_CHART_DATA);
+        setLoading(false);
+      }, 800);
     } catch (error) {
-      console.error('Failed to fetch stats:', error)
-      setLoading(false)
+      console.error("Failed to fetch stats:", error);
+      setLoading(false);
     }
-  }
+  };
 
   const KPICard = ({ title, value, color, icon }) => (
     <div className={`bg-white rounded-lg shadow p-6 border-l-4 ${color}`}>
@@ -60,23 +66,36 @@ export default function DashboardPage() {
       )}
       <p className="text-sm text-gray-500 mt-1">{title}</p>
     </div>
-  )
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-[#1B4F8A]">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">Overview of all records</p>
         </div>
-        <button
-          onClick={() => navigate('/')}
-          className="border border-gray-300 text-gray-600 px-4 py-2 rounded hover:bg-gray-50 text-sm"
-        >
-          View All Records
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate("/reports")}
+            className="bg-[#1B4F8A] text-white px-4 py-2 rounded hover:bg-[#15396B] text-sm"
+          >
+            Generate AI Report
+          </button>
+          <button
+            onClick={() => navigate("/analyse")}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm"
+          >
+            Analyze Document
+          </button>
+          <button
+            onClick={() => navigate("/records")}
+            className="border border-gray-300 text-gray-600 px-4 py-2 rounded hover:bg-gray-50 text-sm"
+          >
+            View All Records
+          </button>
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -125,7 +144,6 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         )}
       </div>
-
     </div>
-  )
+  );
 }

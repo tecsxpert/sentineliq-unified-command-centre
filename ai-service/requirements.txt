@@ -10,3 +10,5 @@ langchain==0.1.16
 pypdf==4.0.1
 python-docx==0.8.11
 chardet==5.2.0
+pytest==7.4.3
+pytest-mock==3.12.0

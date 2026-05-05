@@ -2,7 +2,7 @@
 Report Generation Route - REST endpoint for report generation
 POST /api/ai/generate-report
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response, stream_with_context
 from services.report_service import get_report_service
 import json
 
@@ -16,7 +16,10 @@ report_service = get_report_service()
 def generate_report():
     """
     Generate a comprehensive report
-    
+
+    Query parameters:
+    - stream: boolean (optional, default: false) - Enable SSE streaming
+
     Expected JSON:
     {
         "topic": "string (required) - Report topic",
@@ -26,85 +29,62 @@ def generate_report():
         "top_items_count": "integer (optional, default: 5) - Number of top items",
         "context_documents": "array (optional) - Specific documents for context"
     }
-    
-    Returns:
+
+    Returns (regular):
     {
         "status": "success",
-        "data": {
-            "title": "string",
-            "executive_summary": "string",
-            "overview": "string",
-            "top_items": [
-                {
-                    "item_number": integer,
-                    "title": "string",
-                    "description": "string",
-                    "impact": "high|medium|low",
-                    "priority": integer
-                }
-            ],
-            "recommendations": [
-                {
-                    "recommendation": "string",
-                    "action": "string with newlines",
-                    "timeline": "immediate|short-term|long-term",
-                    "effort": "low|medium|high"
-                }
-            ],
-            "metadata": {
-                "generated_at": "ISO timestamp",
-                "report_type": "string",
-                "topic": "string",
-                "items_count": integer,
-                "recommendations_count": integer,
-                "context_used": "string"
-            }
-        }
+        "data": { ... report data ... }
     }
+
+    Returns (streaming): SSE events with different event types
     """
     try:
+        # Check if streaming is requested
+        stream_param = request.args.get('stream', 'false').lower()
+        is_streaming = stream_param in ('true', '1', 'yes')
+
         data = request.get_json()
-        
+
         # Validate required fields
         if not data or 'topic' not in data:
             return jsonify({
                 "status": "error",
                 "message": "Missing required field: 'topic'"
             }), 400
-        
+
         topic = data['topic']
         if not isinstance(topic, str) or len(topic.strip()) == 0:
             return jsonify({
                 "status": "error",
                 "message": "Topic must be a non-empty string"
             }), 400
-        
+
         # Extract optional parameters
         report_type = data.get('report_type', 'general')
         use_rag = data.get('use_rag', True)
         custom_context = data.get('custom_context', '')
         top_items_count = data.get('top_items_count', 5)
         context_documents = data.get('context_documents', [])
-        
+
         # Validate parameters
         if not isinstance(report_type, str):
             return jsonify({
                 "status": "error",
                 "message": "report_type must be a string"
             }), 400
-        
+
         if not isinstance(use_rag, bool):
             return jsonify({
                 "status": "error",
                 "message": "use_rag must be a boolean"
             }), 400
-        
+
         if not isinstance(top_items_count, int) or top_items_count < 1 or top_items_count > 15:
             return jsonify({
                 "status": "error",
                 "message": "top_items_count must be an integer between 1 and 15"
             }), 400
-        
+
         # Handle context documents
         if context_documents:
             if not isinstance(context_documents, list):
@@ -112,24 +92,44 @@ def generate_report():
                     "status": "error",
                     "message": "context_documents must be an array"
                 }), 400
-            
+
             # Use context documents instead of RAG
-            report = report_service.generate_summarized_report(topic, context_documents)
+            if is_streaming:
+                return Response(
+                    stream_with_context(report_service.generate_streaming_summarized_report(topic, context_documents)),
+                    content_type='text/event-stream',
+                    headers={'Cache-Control': 'no-cache', 'Connection': 'keep-alive'}
+                )
+            else:
+                report = report_service.generate_summarized_report(topic, context_documents)
         else:
             # Generate report with specified parameters
-            report = report_service.generate_report(
-                topic=topic,
-                report_type=report_type,
-                use_rag=use_rag,
-                custom_context=custom_context,
-                top_items_count=top_items_count
-            )
-        
+            if is_streaming:
+                return Response(
+                    stream_with_context(report_service.generate_streaming_report(
+                        topic=topic,
+                        report_type=report_type,
+                        use_rag=use_rag,
+                        custom_context=custom_context,
+                        top_items_count=top_items_count
+                    )),
+                    content_type='text/event-stream',
+                    headers={'Cache-Control': 'no-cache', 'Connection': 'keep-alive'}
+                )
+            else:
+                report = report_service.generate_report(
+                    topic=topic,
+                    report_type=report_type,
+                    use_rag=use_rag,
+                    custom_context=custom_context,
+                    top_items_count=top_items_count
+                )
+
         return jsonify({
             "status": "success",
             "data": report
         }), 200
-        
+
     except ValueError as e:
         return jsonify({
             "status": "error",

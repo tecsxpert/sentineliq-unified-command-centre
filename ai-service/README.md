@@ -22,6 +22,7 @@ A production-ready Flask microservice providing 9 AI-powered endpoints for the S
 ## Prerequisites
 
 ### System Requirements
+
 - **OS**: Windows, macOS, or Linux
 - **Python**: 3.9+ (tested with 3.13.1)
 - **Memory**: 2GB minimum (4GB+ recommended for ChromaDB)
@@ -29,6 +30,7 @@ A production-ready Flask microservice providing 9 AI-powered endpoints for the S
 - **Network**: Outbound HTTPS for Groq API (groq.com)
 
 ### External Dependencies
+
 - **Groq API**: Free tier available at [groq.com](https://groq.com)
 - **Python Package Manager**: pip 24.0+
 
@@ -61,6 +63,7 @@ pip install -r requirements.txt
 ```
 
 **Key Dependencies**:
+
 ```
 Flask==2.3.3              # Web framework
 Flask-CORS==4.0.0         # Cross-origin resource sharing
@@ -142,6 +145,7 @@ python app.py
 ```
 
 **Output**:
+
 ```
  * Serving Flask app 'app'
  * Debug mode: on
@@ -185,6 +189,7 @@ Content-Type: application/json
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "status": "healthy",
@@ -216,6 +221,7 @@ Content-Type: application/json
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "status": "success",
@@ -247,6 +253,7 @@ Content-Type: application/json
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "status": "success",
@@ -276,6 +283,7 @@ Content-Type: application/json
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "status": "success",
@@ -283,10 +291,7 @@ Content-Type: application/json
   "description": "Complete loss of user authentication functionality...",
   "severity": "critical",
   "type": "incident",
-  "key_points": [
-    "Authentication service unavailable",
-    "All users locked out"
-  ],
+  "key_points": ["Authentication service unavailable", "All users locked out"],
   "timestamp": "2026-05-05T10:30:45Z"
 }
 ```
@@ -305,6 +310,7 @@ Content-Type: application/json
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "status": "success",
@@ -336,6 +342,7 @@ Content-Type: application/json
 ```
 
 **Response** (200 OK, Content-Type: text/event-stream):
+
 ```
 data: {"type": "start", "title": "System Performance Analysis"}
 data: {"type": "token", "content": "The"}
@@ -358,6 +365,7 @@ Content-Type: application/json
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "status": "success",
@@ -395,6 +403,7 @@ Content-Type: application/json
 ```
 
 **Response** (201 Created):
+
 ```json
 {
   "status": "success",
@@ -424,6 +433,7 @@ Content-Type: application/json
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "status": "success",
@@ -458,11 +468,13 @@ Content-Type: application/json
 ```
 
 **Batch Status**:
+
 ```http
 GET /api/ai/batch-process/status
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "status": "ready",
@@ -545,7 +557,7 @@ docker run -p 5000:5000 \
 
 ### Production Checklist
 
-- [ ] Set FLASK_ENV=production  
+- [ ] Set FLASK_ENV=production
 - [ ] Configure valid GROQ_API_KEY
 - [ ] Enable CACHE_ENABLED=true
 - [ ] Use Gunicorn with 4+ workers
@@ -558,15 +570,15 @@ docker run -p 5000:5000 \
 
 ### Technology Stack
 
-| Component | Version | Purpose |
-|-----------|---------|---------|
-| Flask | 2.3.3 | REST API framework |
-| Groq LLM | Latest | Text generation |
-| ChromaDB | 0.3.21 | Vector search |
-| Sentence-Transformers | 2.2.2 | Embeddings |
-| ThreadPoolExecutor | Python stdlib | Batch processing |
-| Pytest | 7.4.3 | Unit testing |
-| Gunicorn | 21.2.0 | Production server |
+| Component             | Version       | Purpose            |
+| --------------------- | ------------- | ------------------ |
+| Flask                 | 2.3.3         | REST API framework |
+| Groq LLM              | Latest        | Text generation    |
+| ChromaDB              | 0.3.21        | Vector search      |
+| Sentence-Transformers | 2.2.2         | Embeddings         |
+| ThreadPoolExecutor    | Python stdlib | Batch processing   |
+| Pytest                | 7.4.3         | Unit testing       |
+| Gunicorn              | 21.2.0        | Production server  |
 
 ### Performance
 
@@ -581,12 +593,12 @@ docker run -p 5000:5000 \
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| GROQ_API_KEY not found | Create .env file with valid key |
+| Issue                         | Solution                              |
+| ----------------------------- | ------------------------------------- |
+| GROQ_API_KEY not found        | Create .env file with valid key       |
 | ChromaDB collection not found | First request auto-creates collection |
-| Connection timeout | Check internet, verify firewall |
-| Port 5000 in use | Change AI_SERVICE_PORT in .env |
+| Connection timeout            | Check internet, verify firewall       |
+| Port 5000 in use              | Change AI_SERVICE_PORT in .env        |
 
 ---
 

@@ -35,19 +35,62 @@ class ReportService:
             print(f"Warning: Could not retrieve context: {str(e)}")
             return ""
     
-    def _generate_title(self, topic: str) -> str:
-        """Generate report title using Groq"""
+    def _generate_streaming_title(self, topic: str):
+        """Generate report title using streaming Groq"""
         prompt = f"""Generate a professional and concise report title for the following topic. 
         Return ONLY the title, nothing else.
         
         Topic: {topic}"""
-        
+
         try:
-            title = self.groq_client.chat(prompt).strip()
-            return title
+            for chunk in self.groq_client.generate_streaming_response(prompt):
+                yield chunk
         except Exception as e:
-            print(f"Error generating title: {str(e)}")
-            return f"Report: {topic}"
+            print(f"Error generating streaming title: {str(e)}")
+            yield f"Report: {topic}"
+
+    def _generate_streaming_overview(self, topic: str, context: str = ""):
+        """Generate detailed overview using streaming Groq"""
+        context_section = f"\nAvailable information:\n{context[:1500]}\n" if context else ""
+
+        prompt = f"""Generate a detailed overview (3-4 paragraphs) for a report on: {topic}
+{context_section}
+
+The overview should:
+1. Explain what this topic is about
+2. Describe its importance and relevance
+3. Outline the key aspects covered in this report
+
+Return ONLY the overview text in clear paragraphs."""
+
+        try:
+            for chunk in self.groq_client.generate_streaming_response(prompt):
+                yield chunk
+        except Exception as e:
+            print(f"Error generating streaming overview: {str(e)}")
+            yield f"Comprehensive overview of {topic}"
+
+    def _generate_streaming_executive_summary(self, topic: str, overview: str,
+                                             context: str = ""):
+        """Generate executive summary using streaming Groq"""
+        context_section = f"\nContext from knowledge base:\n{context[:1000]}\n" if context else ""
+
+        prompt = f"""Generate a professional executive summary (2-3 sentences) for a report on the following:
+
+Topic: {topic}
+
+Overview: {overview}
+{context_section}
+
+Create a concise executive summary that captures the key points and value proposition. 
+Return ONLY the executive summary text, no labels or formatting."""
+
+        try:
+            for chunk in self.groq_client.generate_streaming_response(prompt):
+                yield chunk
+        except Exception as e:
+            print(f"Error generating streaming executive summary: {str(e)}")
+            yield overview[:200]
     
     def _generate_executive_summary(self, topic: str, overview: str, 
                                    context: str = "") -> str:
@@ -264,17 +307,99 @@ Return ONLY valid JSON array, no other text."""
                 }
             }
             
-            print("✓ Report generated successfully")
-            return report
-            
+    def generate_streaming_report(self, topic: str, report_type: str = "general",
+                                 use_rag: bool = True, custom_context: str = "",
+                                 top_items_count: int = 5):
+        """
+        Generate a report with streaming output
+        Yields SSE events as different parts are generated
+        """
+        try:
+            print(f"Generating streaming {report_type} report on: {topic}")
+
+            # Step 1: Retrieve context
+            context = ""
+            if use_rag:
+                context = self._retrieve_context(topic, n_results=5)
+
+            if custom_context:
+                context = f"{custom_context}\n\n{context}" if context else custom_context
+
+            # Send start event
+            yield f"event: start\ndata: {json.dumps({'status': 'started', 'topic': topic})}\n\n"
+
+            # Step 2: Generate title
+            print("  > Generating title...")
+            yield f"event: progress\ndata: {json.dumps({'step': 'title', 'message': 'Generating report title...'})}\n\n"
+
+            title = ""
+            for chunk in self._generate_streaming_title(topic):
+                title += chunk
+                yield f"event: title\ndata: {json.dumps({'chunk': chunk})}\n\n"
+
+            # Step 3: Generate overview
+            print("  > Generating overview...")
+            yield f"event: progress\ndata: {json.dumps({'step': 'overview', 'message': 'Generating detailed overview...'})}\n\n"
+
+            overview = ""
+            for chunk in self._generate_streaming_overview(topic, context):
+                overview += chunk
+                yield f"event: overview\ndata: {json.dumps({'chunk': chunk})}\n\n"
+
+            # Step 4: Generate executive summary
+            print("  > Generating executive summary...")
+            yield f"event: progress\ndata: {json.dumps({'step': 'executive_summary', 'message': 'Creating executive summary...'})}\n\n"
+
+            executive_summary = ""
+            for chunk in self._generate_streaming_executive_summary(topic, overview, context):
+                executive_summary += chunk
+                yield f"event: executive_summary\ndata: {json.dumps({'chunk': chunk})}\n\n"
+
+            # Step 5: Generate top items
+            print(f"  > Generating top {top_items_count} items...")
+            yield f"event: progress\ndata: {json.dumps({'step': 'top_items', 'message': f'Generating top {top_items_count} items...'})}\n\n"
+
+            top_items = self._generate_top_items(topic, context, top_items_count)
+            yield f"event: top_items\ndata: {json.dumps({'items': top_items})}\n\n"
+
+            # Step 6: Generate recommendations
+            print("  > Generating recommendations...")
+            yield f"event: progress\ndata: {json.dumps({'step': 'recommendations', 'message': 'Creating actionable recommendations...'})}\n\n"
+
+            recommendations = self._generate_recommendations(topic, overview, top_items, context)
+            yield f"event: recommendations\ndata: {json.dumps({'recommendations': recommendations})}\n\n"
+
+            # Send complete report
+            report = {
+                "title": title,
+                "executive_summary": executive_summary,
+                "overview": overview,
+                "top_items": top_items,
+                "recommendations": recommendations,
+                "metadata": {
+                    "generated_at": datetime.now().isoformat(),
+                    "report_type": report_type,
+                    "topic": topic,
+                    "items_count": len(top_items),
+                    "recommendations_count": len(recommendations),
+                    "context_used": "rag" if use_rag else "custom" if custom_context else "none"
+                }
+            }
+
+            yield f"event: complete\ndata: {json.dumps({'status': 'completed', 'report': report})}\n\n"
+
+            print("✓ Streaming report generated successfully")
+
         except Exception as e:
-            print(f"✗ Error generating report: {str(e)}")
-            raise
+            print(f"✗ Error generating streaming report: {str(e)}")
+            yield f"event: error\ndata: {json.dumps({'status': 'error', 'message': str(e)})}\n\n"
     
-    def generate_summarized_report(self, topic: str, context_docs: List[str]) -> Dict:
-        """Generate report from specific context documents"""
+    def generate_streaming_summarized_report(self, topic: str, context_docs: List[str]):
+        """Generate streaming report from specific context documents"""
         context = "\n\n".join(context_docs)
-        return self.generate_report(topic, custom_context=context, use_rag=False)
+        # For summarized reports, we can reuse the streaming logic with custom context
+        for event in self.generate_streaming_report(topic, custom_context=context, use_rag=False):
+            yield event
     
     def generate_comparative_report(self, items_to_compare: List[str]) -> Dict:
         """Generate comparative report for multiple items"""

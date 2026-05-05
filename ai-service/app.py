@@ -30,6 +30,8 @@ from routes.describe import describe_bp
 from routes.recommend import recommend_bp
 from routes.rag import rag_bp
 from routes.report import report_bp
+from routes.analyse import analyse_bp
+from routes.batch_process import batch_bp
 
 app.register_blueprint(health_bp, url_prefix='/api/ai')
 app.register_blueprint(query_bp, url_prefix='/api/ai')
@@ -38,6 +40,8 @@ app.register_blueprint(describe_bp, url_prefix='/api/ai')
 app.register_blueprint(recommend_bp, url_prefix='/api/ai')
 app.register_blueprint(rag_bp, url_prefix='/api/ai')
 app.register_blueprint(report_bp, url_prefix='/api/ai')
+app.register_blueprint(analyse_bp, url_prefix='/api/ai')
+app.register_blueprint(batch_bp, url_prefix='/api/ai')
 
 
 # ==================== ROOT ENDPOINT ====================
