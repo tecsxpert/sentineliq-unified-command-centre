@@ -23,7 +23,7 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Login successful"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     public String login(@RequestParam Long id) {
         return jwtUtil.generateToken(id);
     }
