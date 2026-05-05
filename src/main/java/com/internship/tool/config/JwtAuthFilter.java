@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Collections;
-
 @Component
 public class JwtAuthFilter implements Filter {
 
@@ -29,10 +28,17 @@ public class JwtAuthFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
+
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
         String path = req.getRequestURI();
+
+        if (path.startsWith("/swagger") || path.startsWith("/v3/api-docs")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
 
         if (path.startsWith("/auth") || path.startsWith("/upload") || path.startsWith("/files")) {
             chain.doFilter(request, response);
