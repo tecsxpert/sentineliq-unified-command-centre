@@ -15,10 +15,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        //.requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/upload", "/files/**").permitAll()
-                        .requestMatchers("/users/create").permitAll()
+                        .requestMatchers("/users/**").permitAll()   // ⭐ ADD THIS
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
