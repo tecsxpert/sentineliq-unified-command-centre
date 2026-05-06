@@ -1,16 +1,15 @@
 package com.internship.tool.controller;
 
-import com.internship.tool.entity.FileData;
 import com.internship.tool.service.FileService;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import java.io.File;
-import java.nio.file.Files;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+
 @Tag(name = "Files", description = "File upload/download APIs")
 
 @RestController

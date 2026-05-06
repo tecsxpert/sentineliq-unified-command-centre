@@ -1,15 +1,17 @@
 package com.internship.tool.controller;
+
 import com.internship.tool.entity.User;
 import com.internship.tool.service.UserService;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Users", description = "User management APIs")
 @RestController
@@ -33,6 +35,7 @@ public class UserController {
     public ResponseEntity<User> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
     @Operation(summary = "Create user", description = "Creates a new user")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "User created successfully"),
