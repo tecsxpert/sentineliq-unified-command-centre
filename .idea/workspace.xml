@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b9923cbf-2132-4629-b2e7-07788eb82c64" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/backend/tool/target/classes/db/migration/V4__performance.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tool/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/tool/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/tool/src/main/java/com/internship/tool/repository/ItemRepository.java.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +74,7 @@
       <workItem from="1777642441328" duration="1083000" />
       <workItem from="1777703787417" duration="3744000" />
       <workItem from="1777871359086" duration="1526000" />
-      <workItem from="1777877185626" duration="157000" />
+      <workItem from="1777877185626" duration="851000" />
     </task>
     <servers />
   </component>
