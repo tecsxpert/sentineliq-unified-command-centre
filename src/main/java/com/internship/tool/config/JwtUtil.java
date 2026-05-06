@@ -3,6 +3,7 @@ package com.internship.tool.config;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
+
 import java.security.Key;
 
 @Component
@@ -20,6 +21,7 @@ public class JwtUtil {
                 .signWith(getKey())
                 .compact();
     }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -31,6 +33,7 @@ public class JwtUtil {
             return false;
         }
     }
+
     public Long extractUserId(String token) {
         return Long.parseLong(
                 Jwts.parserBuilder()

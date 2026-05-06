@@ -1,9 +1,11 @@
 package com.internship.tool.security;
 
-import org.junit.jupiter.api.Test;
-//import com.internship.tool.security.JwtUtil;
-import static org.junit.jupiter.api.Assertions.*;
 import com.internship.tool.config.JwtUtil;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 class JwtUtilTest {
 
     JwtUtil jwtUtil = new JwtUtil();

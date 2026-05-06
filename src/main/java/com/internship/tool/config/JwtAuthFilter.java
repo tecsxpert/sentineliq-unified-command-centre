@@ -1,70 +1,38 @@
 package com.internship.tool.config;
 
-import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
-public class JwtAuthFilter implements Filter {
-
-    private final JwtUtil jwtUtil;
-
-    public JwtAuthFilter(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
+public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
+        String path = request.getRequestURI();
 
-        String path = req.getRequestURI();
+        // ✅ Skip authentication for public endpoints
+        if (path.startsWith("/auth") ||
+                path.startsWith("/swagger") ||
+                path.startsWith("/v3/api-docs") ||
+                path.equals("/users/create") ||
+                path.startsWith("/upload") ||
+                path.startsWith("/files")) {
 
-        if (path.startsWith("/auth") || path.startsWith("/upload") || path.startsWith("/files")) {
-            chain.doFilter(request, response);
+            filterChain.doFilter(request, response);
             return;
         }
 
-        String header = req.getHeader("Authorization");
-
-        if (header == null || !header.startsWith("Bearer ")) {
-            res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        String token = header.substring(7);
-
-        if (!jwtUtil.validateToken(token)) {
-            res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        Long userId = jwtUtil.extractUserId(token);
-
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(
-                        userId,
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
-                );
-
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        chain.doFilter(request, response);
+        // 👉 Continue filter (you can add JWT logic later)
+        filterChain.doFilter(request, response);
     }
-
 }
