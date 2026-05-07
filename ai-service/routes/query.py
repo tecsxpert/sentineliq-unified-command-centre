@@ -1,96 +1,46 @@
-import json
-from flask import Blueprint, jsonify, request
+from fastapi import APIRouter
 from services.groq_client import GroqClient
-from services.chroma_service import query_data
 
-# Create blueprint
-query_bp = Blueprint('query', __name__)
-
+router = APIRouter()
 client = GroqClient()
 
-def query_with_context(user_question):
-    try:
-        #Step 1: Get top 3 results
-        results = query_data(user_question)
-        documents = results.get("documents", [[]])[0]
+@router.post("/query")
+def query_api(data: dict):
+    user_question = data.get("question", "")
 
-        #Step 2: Prepare context
-        context = "\n".join(documents)
+    context = "The app crashes when I login. The UI looks clean and modern. Feature request: add dark mode."
 
-        #Step 3: Prompt
-        prompt = f"""
-Answer the question using ONLY the provided context.
+    prompt = f"""
+    You are an AI assistant.
 
-Context:
-{context}
+    STRICT RULES:
+    - Answer ONLY using the provided context
+    - If answer is not found, say: "No relevant information found"
+    - Do NOT guess or assume
+    - Keep answer short and clear
 
-Question:
-{user_question}
+    Context:
+    {context}
 
-STRICT RULES:
-- Do NOT use markdown
-- Do NOT use ```
-- Do NOT add extra explanation
-- Use only the context
-- Return ONLY valid JSON
+    Question:
+    {user_question}
 
-Format:
-{{
-    "answer": ""
-}}
-"""
-
-        #Step 4: Call Groq
-        response = client.generate_response(prompt)
-
-        #Step 5: Extract clean answer
-        try:
-            parsed = json.loads(response)
-            answer_text = parsed.get("answer", response)
-        except:
-            answer_text = response
-
-        #Step 6: Return final output
-        return {
-            "answer": answer_text,
-            "sources": documents
-        }
-
-    except Exception as e:
-        return {
-            "error": str(e)
-        }
-
-
-@query_bp.route('/query', methods=['POST'])
-def query_endpoint():
+    Return only the answer.
     """
-    Query endpoint for RAG-based question answering
-    
-    Request JSON:
-    {
-        "question": "Your question here"
+
+    result = client.generate_response(prompt)
+
+    answer = result.get("response", "")
+    meta = result.get("meta", {})
+
+    sources = [
+        "The app crashes when I login",
+        "The UI looks clean and modern",
+        "Feature request: add dark mode"
+    ]
+
+    return {
+        "answer": answer,
+        "sources": sources,
+        "meta": meta
     }
-    
-    Response JSON:
-    {
-        "answer": "Answer text",
-        "sources": ["source 1", "source 2", ...]
-    }
-    """
-    try:
-        data = request.get_json()
-        
-        if not data or 'question' not in data:
-            return jsonify({"error": "Missing 'question' field"}), 400
-        
-        question = data['question'].strip()
-        
-        if not question:
-            return jsonify({"error": "Question cannot be empty"}), 400
-        
-        result = query_with_context(question)
-        return jsonify(result), 200
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
