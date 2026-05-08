@@ -84,41 +84,13 @@ def normalize_finding(item, finding_type):
 
 def analyse_document(text):
     """Analyze document text for key insights and risks."""
-    prompt = f"""Analyze the following document text and identify key insights and risks.
-Return ONLY a JSON object with two arrays: "insights" and "risks".
-
-For each insight, provide:
-- category: technical|business|operational|strategic|compliance|performance|security
-- title: brief title (5-10 words)
-- description: detailed explanation (1-2 sentences)
-- severity: low|medium|high (insights typically low-medium)
-- confidence: 0.0-1.0 (how confident you are in this insight)
-
-For each risk, provide:
-- category: security|compliance|operational|financial|reputational|technical|strategic
-- title: brief title (5-10 words)
-- description: detailed explanation (1-2 sentences)
-- severity: low|medium|high|critical
-- confidence: 0.0-1.0 (how confident you are in this risk)
-
-Focus on:
-- Key business insights or opportunities
-- Potential risks or threats
-- Compliance or regulatory concerns
-- Technical issues or improvements
-- Operational efficiencies or problems
-- Strategic implications
-
-Return 3-5 insights and 2-4 risks maximum. Prioritize the most important findings.
+    prompt = f"""Analyze the document text and return ONLY valid JSON with two arrays: "insights" and "risks".
+Each insight and risk must include category, title, description, severity, and confidence.
+Return up to 5 insights and 4 risks.
 
 Document Text:
 {text}
-
-Return ONLY valid JSON:
-{{
-    "insights": [...],
-    "risks": [...]
-}}"""
+"""
 
     try:
         response = client.generate_response(prompt).strip()

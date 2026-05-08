@@ -10,6 +10,9 @@ import os
 # Load environment variables
 load_dotenv()
 
+from services.model_preloader import init_model_preloader
+from services.cache_service import verify_redis_connection
+
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -19,6 +22,12 @@ CORS(app)
 # Configure app
 app.config['JSON_SORT_KEYS'] = False
 
+
+# ==================== STARTUP OPTIMIZATIONS ====================
+
+# Verify Redis cache connectivity and preload sentence-transformers model
+verify_redis_connection()
+init_model_preloader(os.getenv('EMBEDDING_MODEL', 'all-MiniLM-L6-v2'))
 
 # ==================== BLUEPRINT REGISTRATION ====================
 

@@ -4,7 +4,6 @@ Pre-loads expensive models (sentence-transformers) at startup to reduce latency
 Implements singleton pattern for model reuse across requests
 """
 import os
-from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -47,7 +46,8 @@ class ModelPreloader:
             start_time = time.time()
             print(f"[ModelPreloader] Loading embedding model: {embedding_model_name}")
             
-            # Load the model (this is the slow operation done once at startup)
+            # Load the model lazily to avoid import-time dependency failures when not required
+            from sentence_transformers import SentenceTransformer
             self._embedding_model = SentenceTransformer(embedding_model_name)
             
             load_time = time.time() - start_time

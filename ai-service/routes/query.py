@@ -19,25 +19,14 @@ def query_with_context(user_question):
 
         #Step 3: Prompt
         prompt = f"""
-Answer the question using ONLY the provided context.
+Answer the question using only the context below.
+Return valid JSON: {{"answer": ""}}.
 
 Context:
 {context}
 
 Question:
 {user_question}
-
-STRICT RULES:
-- Do NOT use markdown
-- Do NOT use ```
-- Do NOT add extra explanation
-- Use only the context
-- Return ONLY valid JSON
-
-Format:
-{{
-    "answer": ""
-}}
 """
 
         #Step 4: Call Groq

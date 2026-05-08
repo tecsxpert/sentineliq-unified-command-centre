@@ -13,9 +13,15 @@ class GroqClient:
 
     def __init__(self):
         self.api_key = os.getenv("GROQ_API_KEY")
-        self.client = Groq(api_key=self.api_key)
+        if not self.api_key:
+            self.client = None
+            print("[GroqClient] Warning: GROQ_API_KEY is not set. Groq requests will be mocked or disabled.")
+        else:
+            self.client = Groq(api_key=self.api_key)
 
     def generate_response(self, prompt, use_cache=True):
+        if self.client is None:
+            return "Error: GROQ_API_KEY is not configured"
         retries = 3
 
         # 🔥 STEP 1: Check cache

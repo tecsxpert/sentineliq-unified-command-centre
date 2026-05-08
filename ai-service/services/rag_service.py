@@ -5,10 +5,10 @@ Handles document loading, chunking, embedding, and storage in ChromaDB
 import os
 import chromadb
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
 import subprocess
 import json
 from datetime import datetime
+from services.model_preloader import get_preloaded_embedding_model, is_model_preloaded
 
 
 class RAGService:
@@ -34,8 +34,19 @@ class RAGService:
         )
         
         # Initialize embedding model
-        print(f"Loading embedding model: {embedding_model}")
-        self.embedding_model = SentenceTransformer(embedding_model)
+        if is_model_preloaded():
+            print(f"[RAGService] Using preloaded embedding model: {embedding_model}")
+            self.embedding_model = get_preloaded_embedding_model()
+        else:
+            print(f"[RAGService] Preloaded model unavailable, loading {embedding_model} directly")
+            try:
+                from sentence_transformers import SentenceTransformer
+                self.embedding_model = SentenceTransformer(embedding_model)
+            except ImportError:
+                raise ImportError(
+                    "sentence-transformers is required for RAG services. "
+                    "Install it or preload the model in a compatible environment."
+                )
         
     def load_text_file(self, file_path: str) -> str:
         """Load text from file"""

@@ -7,14 +7,16 @@ import os
 
 rag_bp = Blueprint('rag', __name__)
 
-# Initialize RAG service
-rag_service = get_rag_service()
+
+def _get_rag_service():
+    return get_rag_service()
 
 
 @rag_bp.route('/rag/health', methods=['GET'])
 def rag_health():
     """Check RAG service health"""
     try:
+        rag_service = _get_rag_service()
         stats = rag_service.get_collection_stats()
         return jsonify({
             "status": "healthy",
@@ -57,6 +59,7 @@ def upload_documents():
                     "message": f"File not found: {file_path}"
                 }), 400
         
+        rag_service = _get_rag_service()
         # Process documents
         stats = rag_service.add_documents(file_paths, metadata)
         
@@ -94,6 +97,7 @@ def retrieve_documents():
         query = data['query']
         n_results = data.get('n_results', 5)
         
+        rag_service = _get_rag_service()
         results = rag_service.retrieve_documents(query, n_results)
         
         return jsonify({
@@ -112,6 +116,7 @@ def retrieve_documents():
 def get_stats():
     """Get collection statistics"""
     try:
+        rag_service = _get_rag_service()
         stats = rag_service.get_collection_stats()
         return jsonify({
             "status": "success",
@@ -128,6 +133,7 @@ def get_stats():
 def clear_collection():
     """Clear all documents from collection"""
     try:
+        rag_service = _get_rag_service()
         rag_service.delete_all_documents()
         return jsonify({
             "status": "success",
@@ -144,6 +150,7 @@ def clear_collection():
 def export_collection():
     """Export collection to JSON file"""
     try:
+        rag_service = _get_rag_service()
         output_file = request.args.get('output_file', 'rag_export.json')
         rag_service.export_collection(output_file)
         return jsonify({

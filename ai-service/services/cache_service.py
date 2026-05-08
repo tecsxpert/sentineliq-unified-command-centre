@@ -2,10 +2,15 @@
 Day 13: Enhanced Cache Service with Redis Verification
 Includes connection verification, error handling, and fallback to in-memory cache
 """
-import redis
+try:
+    import redis
+except ImportError:
+    redis = None
+
 import hashlib
 import json
 import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,19 +22,22 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_DB = int(os.getenv("REDIS_DB", 0))
 CACHE_TTL = int(os.getenv("CACHE_TTL_SECONDS", 3600))  # 1 hour
 
-# Connection pool for better performance
-redis_pool = redis.ConnectionPool(
-    host=REDIS_HOST,
-    port=REDIS_PORT,
-    db=REDIS_DB,
-    decode_responses=True,
-    max_connections=10,
-    socket_connect_timeout=5,
-    socket_keepalive=True,
-    socket_keepalive_options={1: 1, 2: 3, 3: 3}
-)
-
-r = redis.Redis(connection_pool=redis_pool)
+r = None
+if redis is not None:
+    try:
+        redis_pool = redis.ConnectionPool(
+            host=REDIS_HOST,
+            port=REDIS_PORT,
+            db=REDIS_DB,
+            decode_responses=True,
+            max_connections=10,
+            socket_connect_timeout=5,
+            socket_keepalive=True,
+            socket_keepalive_options={1: 1, 2: 3, 3: 3}
+        )
+        r = redis.Redis(connection_pool=redis_pool)
+    except Exception:
+        r = None
 
 # Fallback in-memory cache (used if Redis unavailable)
 _memory_cache = {}
@@ -51,6 +59,9 @@ def verify_redis_connection():
     global redis_available
     
     try:
+        if r is None:
+            raise RuntimeError("Redis client not available")
+
         print("[Cache] Verifying Redis connection...")
         r.ping()
         redis_available = True
@@ -61,25 +72,17 @@ def verify_redis_connection():
             "port": REDIS_PORT,
             "message": "Redis is available and working"
         }
-    except (redis.ConnectionError, redis.TimeoutError) as e:
+    except (AttributeError, RuntimeError, Exception) as e:
         redis_available = False
-        print(f"[Cache] ✗ Redis connection failed: {str(e)}")
+        message = str(e)
+        print(f"[Cache] ✗ Redis connection failed: {message}")
         print("[Cache] ⚠ Falling back to in-memory cache (not recommended for production)")
         return {
             "status": "failed",
             "host": REDIS_HOST,
             "port": REDIS_PORT,
-            "error": str(e),
+            "error": message,
             "message": "Redis unavailable, using in-memory fallback cache",
-            "fallback": True
-        }
-    except Exception as e:
-        redis_available = False
-        print(f"[Cache] ✗ Unexpected error: {str(e)}")
-        return {
-            "status": "error",
-            "error": str(e),
-            "message": "Unexpected error during Redis verification",
             "fallback": True
         }
 
@@ -88,23 +91,56 @@ def generate_key(prompt):
     return hashlib.sha256(prompt.encode()).hexdigest()
 
 
-def get_cache(prompt):
-    global cache_hits, cache_misses
+def _cleanup_memory_cache():
+    now = time.time()
+    expired = [key for key, expiry in _memory_cache_ttl.items() if expiry <= now]
+    for key in expired:
+        _memory_cache.pop(key, None)
+        _memory_cache_ttl.pop(key, None)
 
+
+def get_cache(prompt):
+    global cache_hits, cache_misses, redis_available
+
+    _cleanup_memory_cache()
     key = generate_key(prompt)
-    data = r.get(key)
+    data = None
+
+    if redis_available:
+        try:
+            data = r.get(key)
+        except (redis.ConnectionError, redis.TimeoutError) as e:
+            print(f"[Cache] Redis read failed: {str(e)}")
+            redis_available = False
 
     if data:
         cache_hits += 1
         return json.loads(data)
+
+    # Fallback in-memory cache
+    if not redis_available and key in _memory_cache:
+        cache_hits += 1
+        return _memory_cache[key]
 
     cache_misses += 1
     return None
 
 
 def set_cache(prompt, response):
+    global redis_available
     key = generate_key(prompt)
-    r.setex(key, CACHE_TTL, json.dumps(response))
+
+    if redis_available:
+        try:
+            r.setex(key, CACHE_TTL, json.dumps(response))
+            return
+        except (redis.ConnectionError, redis.TimeoutError) as e:
+            print(f"[Cache] Redis write failed: {str(e)}")
+            redis_available = False
+
+    # Fallback in-memory cache
+    _memory_cache[key] = response
+    _memory_cache_ttl[key] = time.time() + CACHE_TTL
 
 
 def get_cache_stats():
