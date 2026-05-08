@@ -1,0 +1,49 @@
+# SentinelIQ Unified Command Centre
+
+## Overview
+AI-powered web application built with Spring Boot, React, and Flask.
+
+## Tech Stack
+- Java 17 + Spring Boot 3.x
+- PostgreSQL 15
+- Redis 7
+- Flyway migrations
+- Spring Security + JWT
+- Docker + Docker Compose
+
+## Prerequisites
+- Java 17
+- Docker Desktop
+- Node.js 18+
+- Python 3.11
+
+## Setup Instructions
+
+### 1. Clone the repository
+git clone https://github.com/darshanhp9686/sentineliq-unified-command-centre.git
+cd sentineliq-unified-command-centre
+
+### 2. Create .env file
+cp .env.example .env
+Fill in your values in .env file
+
+### 3. Run with Docker
+docker-compose up --build
+
+### 4. Access the app
+- Frontend: http://localhost
+- Backend API: http://localhost:8080
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- AI Service: http://localhost:5000
+
+## Architecture
+Frontend (React) → Backend (Spring Boot) → AI Service (Flask)
+Backend connects to PostgreSQL and Redis
+
+## Known Issues (P3 - Minor)
+- Long titles truncate on mobile screens
+- CSV export does not include audit log history
+- Email notifications require valid SMTP configuration
+
+## Team
+- Java Developer 2: Database, REST API, Auth, Docker
