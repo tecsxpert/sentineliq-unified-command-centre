@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import API from '../services/api'
+import { DetailSkeleton } from '../components/Skeleton'
 
-// Dummy record until backend is ready
 const DUMMY_RECORD = {
   id: 1,
   title: 'Fix login bug',
@@ -43,17 +42,11 @@ export default function DetailPage() {
   const [aiResult, setAiResult] = useState(null)
   const [aiError, setAiError] = useState('')
 
-  useEffect(() => {
-    fetchRecord()
-  }, [id])
+  useEffect(() => { fetchRecord() }, [id])
 
   const fetchRecord = async () => {
     setLoading(true)
     try {
-      // Uncomment when backend is ready:
-      // const res = await API.get(`/api/items/${id}`)
-      // setRecord(res.data)
-
       setTimeout(() => {
         setRecord(DUMMY_RECORD)
         setLoading(false)
@@ -67,7 +60,6 @@ export default function DetailPage() {
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this record?')) return
     try {
-      // await API.delete(`/api/items/${id}`)
       navigate('/')
     } catch (error) {
       console.error('Failed to delete:', error)
@@ -79,11 +71,6 @@ export default function DetailPage() {
     setAiError('')
     setAiResult(null)
     try {
-      // Uncomment when AI service is ready:
-      // const res = await API.post('/api/ai/recommend', { itemId: id })
-      // setAiResult(res.data)
-
-      // Dummy AI response
       setTimeout(() => {
         setAiResult({
           recommendations: [
@@ -102,11 +89,9 @@ export default function DetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-4xl mx-auto space-y-4">
-          {Array(5).fill(0).map((_, i) => (
-            <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
-          ))}
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+        <div className="max-w-4xl mx-auto">
+          <DetailSkeleton />
         </div>
       </div>
     )
@@ -114,34 +99,34 @@ export default function DetailPage() {
 
   if (!record) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <p className="text-gray-400 text-lg">Record not found.</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
           <button
             onClick={() => navigate('/records')}
-            className="text-gray-500 hover:text-gray-700 text-sm"
+            className="self-start text-gray-500 hover:text-gray-700 text-sm min-h-[44px] flex items-center"
           >
             ← Back to Records
           </button>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <button
               onClick={() => navigate(`/edit/${id}`)}
-              className="bg-[#1B4F8A] text-white px-4 py-2 rounded hover:bg-blue-800 text-sm"
+              className="flex-1 sm:flex-none bg-[#1B4F8A] text-white px-4 py-2 rounded hover:bg-blue-800 text-sm min-h-[44px]"
             >
               Edit
             </button>
             <button
               onClick={handleDelete}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm"
+              className="flex-1 sm:flex-none bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm min-h-[44px]"
             >
               Delete
             </button>
@@ -149,12 +134,12 @@ export default function DetailPage() {
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-lg shadow p-8 mb-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 lg:p-8 mb-6">
 
           {/* Title + Badges */}
-          <div className="flex justify-between items-start mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">{record.title}</h1>
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">{record.title}</h1>
+            <div className="flex gap-2 flex-wrap">
               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[record.status]}`}>
                 {record.status}
               </span>
@@ -164,8 +149,8 @@ export default function DetailPage() {
             </div>
           </div>
 
-          {/* Fields Grid */}
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          {/* Fields Grid — 1 col on mobile, 2 on tablet+ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
             <div>
               <p className="text-xs text-gray-400 uppercase mb-1">Category</p>
               <p className="text-gray-700 font-medium">{record.category}</p>
@@ -193,24 +178,23 @@ export default function DetailPage() {
           {/* Description */}
           <div>
             <p className="text-xs text-gray-400 uppercase mb-2">Description</p>
-            <p className="text-gray-700 leading-relaxed">{record.description}</p>
+            <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{record.description}</p>
           </div>
         </div>
 
         {/* AI Analysis Card */}
-        <div className="bg-white rounded-lg shadow p-8">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 lg:p-8">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-700">🤖 AI Analysis</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-700">🤖 AI Analysis</h2>
             <button
               onClick={handleAskAI}
               disabled={aiLoading}
-              className="bg-[#1B4F8A] text-white px-4 py-2 rounded hover:bg-blue-800 text-sm disabled:opacity-50"
+              className="bg-[#1B4F8A] text-white px-3 sm:px-4 py-2 rounded hover:bg-blue-800 text-sm disabled:opacity-50 min-h-[44px]"
             >
               {aiLoading ? 'Analysing...' : 'Ask AI'}
             </button>
           </div>
 
-          {/* Loading */}
           {aiLoading && (
             <div className="space-y-3">
               {Array(3).fill(0).map((_, i) => (
@@ -219,20 +203,18 @@ export default function DetailPage() {
             </div>
           )}
 
-          {/* Error */}
           {aiError && (
             <div className="text-red-500 text-sm flex justify-between items-center">
               <span>{aiError}</span>
-              <button onClick={handleAskAI} className="underline">Retry</button>
+              <button onClick={handleAskAI} className="underline min-h-[44px]">Retry</button>
             </div>
           )}
 
-          {/* AI Result */}
           {aiResult && (
             <div className="space-y-3">
               {aiResult.recommendations.map((rec, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 bg-blue-50 rounded">
-                  <span className={`px-2 py-1 rounded text-xs font-bold ${
+                <div key={i} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 p-3 bg-blue-50 rounded">
+                  <span className={`self-start px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${
                     rec.priority === 'High' ? 'bg-red-100 text-red-700' :
                     rec.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
                     'bg-green-100 text-green-700'
@@ -248,7 +230,6 @@ export default function DetailPage() {
             </div>
           )}
 
-          {/* Default state */}
           {!aiLoading && !aiResult && !aiError && (
             <p className="text-gray-400 text-sm">
               Click "Ask AI" to get intelligent recommendations for this record.
