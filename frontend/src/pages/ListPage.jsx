@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import API from '../services/api'
+import { TableSkeleton } from '../components/Skeleton'
+import EmptyState from '../components/EmptyState'
 
 const DUMMY_RECORDS = [
   { id: 1, title: 'Fix login bug', category: 'Bug', status: 'In Progress', priority: 'High', createdAt: '2026-04-14' },
@@ -23,7 +24,6 @@ export default function ListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // Read initial values from URL
   const [searchText, setSearchText] = useState(searchParams.get('search') || '')
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '')
   const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '')
@@ -37,7 +37,6 @@ export default function ListPage() {
 
   const debounceRef = useRef(null)
 
-  // Debounced search — fires 300ms after user stops typing
   const handleSearchChange = (e) => {
     const value = e.target.value
     setSearchText(value)
@@ -73,7 +72,6 @@ export default function ListPage() {
       dateTo: searchParams.get('dateTo') || '',
       ...newParams,
     }
-    // Remove empty params
     const cleaned = Object.fromEntries(
       Object.entries(current).filter(([_, v]) => v !== '')
     )
@@ -88,7 +86,6 @@ export default function ListPage() {
     setSearchParams({})
   }
 
-  // Filter + sort logic
   useEffect(() => {
     setLoading(true)
     setTimeout(() => {
@@ -122,7 +119,7 @@ export default function ListPage() {
       setRecords(filtered)
       setPage(1)
       setLoading(false)
-    }, 300)
+    }, 1500) // ← 1.5s delay so skeleton is visible
   }, [searchText, statusFilter, dateFrom, dateTo, sortField, sortDir])
 
   const handleSort = (field) => {
@@ -136,8 +133,28 @@ export default function ListPage() {
 
   const paginated = records.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
   const totalPages = Math.ceil(records.length / ITEMS_PER_PAGE)
-
   const hasActiveFilters = searchText || statusFilter || dateFrom || dateTo
+
+  // ── Show skeleton while loading ──────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-[#1B4F8A]">All Records</h1>
+            <p className="text-sm text-gray-500 mt-1">Loading...</p>
+          </div>
+          <div className="flex gap-3">
+            <button className="border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm">Dashboard</button>
+            <button className="bg-[#1B4F8A] text-white px-4 py-2 rounded text-sm">+ New Record</button>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <TableSkeleton rows={6} cols={6} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -168,7 +185,6 @@ export default function ListPage() {
       <div className="bg-white rounded-lg shadow p-4 mb-6">
         <div className="flex flex-wrap gap-3 items-end">
 
-          {/* Text Search */}
           <div className="flex-1 min-w-[200px]">
             <label className="text-xs text-gray-400 uppercase mb-1 block">Search</label>
             <input
@@ -180,7 +196,6 @@ export default function ListPage() {
             />
           </div>
 
-          {/* Status Dropdown */}
           <div className="min-w-[160px]">
             <label className="text-xs text-gray-400 uppercase mb-1 block">Status</label>
             <select
@@ -195,7 +210,6 @@ export default function ListPage() {
             </select>
           </div>
 
-          {/* Date From */}
           <div className="min-w-[150px]">
             <label className="text-xs text-gray-400 uppercase mb-1 block">Date From</label>
             <input
@@ -206,7 +220,6 @@ export default function ListPage() {
             />
           </div>
 
-          {/* Date To */}
           <div className="min-w-[150px]">
             <label className="text-xs text-gray-400 uppercase mb-1 block">Date To</label>
             <input
@@ -217,7 +230,6 @@ export default function ListPage() {
             />
           </div>
 
-          {/* Clear Filters */}
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
@@ -226,7 +238,6 @@ export default function ListPage() {
               Clear Filters
             </button>
           )}
-
         </div>
       </div>
 
@@ -249,20 +260,20 @@ export default function ListPage() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              Array(5).fill(0).map((_, i) => (
-                <tr key={i} className="border-b">
-                  {Array(6).fill(0).map((_, j) => (
-                    <td key={j} className="px-6 py-4">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : paginated.length === 0 ? (
+            {/* ── Empty state ── */}
+            {paginated.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-12 text-gray-400">
-                  No records match your filters.
+                <td colSpan={6} className="py-12">
+                  <EmptyState
+                    variant={hasActiveFilters ? 'no-results' : 'no-data'}
+                    body={hasActiveFilters
+                      ? `No records match your filters. Try clearing them.`
+                      : 'No records yet. Create your first one!'}
+                    action={hasActiveFilters
+                      ? { label: 'Clear Filters', onClick: clearFilters }
+                      : { label: '+ New Record', onClick: () => navigate('/create') }
+                    }
+                  />
                 </td>
               </tr>
             ) : (
