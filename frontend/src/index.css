@@ -1,1 +1,117 @@
 @import "tailwindcss";
+
+/* ── Brand tokens ─────────────────────────────────────── */
+
+:root {
+    --brand-primary: #1B4F8A;
+    --brand-hover: #163f6e;
+    --brand-light: #e8f0fb;
+    --spacing-unit: 8px;
+    --touch-target: 44px;
+}
+
+
+/* ── Global font: Arial ───────────────────────────────── */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    margin: 0;
+    background-color: #f9fafb;
+    color: #1f2937;
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+
+/* ── 44px min touch targets on all buttons/links ─────── */
+
+button,
+a,
+select,
+input[type="submit"] {
+    min-height: var(--touch-target);
+}
+
+
+/* ── 8px grid spacing helpers ────────────────────────── */
+
+.gap-grid {
+    gap: calc(var(--spacing-unit) * 2);
+}
+
+
+/* 16px */
+
+.p-grid {
+    padding: calc(var(--spacing-unit) * 3);
+}
+
+
+/* 24px */
+
+.mb-grid {
+    margin-bottom: calc(var(--spacing-unit) * 2);
+}
+
+
+/* ── Brand primary button ─────────────────────────────── */
+
+.btn-primary {
+    background-color: var(--brand-primary);
+    color: #fff;
+    padding: 0 24px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    min-height: var(--touch-target);
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--brand-hover);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* ── Consistent card shadow ───────────────────────────── */
+
+.card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+
+/* ── Scrollbar brand color ────────────────────────────── */
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--brand-primary);
+    border-radius: 3px;
+}
+
+
+/* ── Focus ring brand color ───────────────────────────── */
+
+*:focus-visible {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+}
