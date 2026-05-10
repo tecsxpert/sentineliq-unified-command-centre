@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 sm:mb-8">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[#1B4F8A]">Dashboard</h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">Overview of all records</p>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">Overview of all records — Live</p>
         </div>
         <button
           onClick={() => navigate('/records')}
