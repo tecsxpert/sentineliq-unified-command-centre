@@ -2,68 +2,78 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { TableSkeleton } from '../components/Skeleton'
 import EmptyState from '../components/EmptyState'
-
-const DUMMY_RECORDS = [
-  { id: 1, title: 'Fix login bug', category: 'Bug', status: 'In Progress', priority: 'High', createdAt: '2026-04-14' },
-  { id: 2, title: 'Add dark mode', category: 'Feature', status: 'Not Started', priority: 'Medium', createdAt: '2026-04-15' },
-  { id: 3, title: 'Setup CI/CD pipeline', category: 'DevOps', status: 'Completed', priority: 'High', createdAt: '2026-04-10' },
-  { id: 4, title: 'Fix XSS vulnerability', category: 'Security', status: 'In Progress', priority: 'High', createdAt: '2026-04-18' },
-  { id: 5, title: 'Update API docs', category: 'Docs', status: 'Completed', priority: 'Low', createdAt: '2026-04-12' },
-  { id: 6, title: 'Add pagination to API', category: 'Feature', status: 'Not Started', priority: 'Medium', createdAt: '2026-04-20' },
-  { id: 7, title: 'Fix memory leak', category: 'Bug', status: 'Completed', priority: 'High', createdAt: '2026-04-08' },
-  { id: 8, title: 'Write unit tests', category: 'Docs', status: 'In Progress', priority: 'Low', createdAt: '2026-04-22' },
-]
+import { getRecords, exportCSV } from '../services/api'   // ← ONLY new import
 
 const statusColors = {
-  'Completed': 'bg-green-100 text-green-800',
-  'In Progress': 'bg-yellow-100 text-yellow-800',
-  'Not Started': 'bg-gray-100 text-gray-700',
+  'Completed':  'bg-green-100 text-green-800',
+  'In Progress':'bg-yellow-100 text-yellow-800',
+  'Active':     'bg-blue-100 text-blue-800',
+  'Blocked':    'bg-red-100 text-red-800',
+  'Not Started':'bg-gray-100 text-gray-700',
+}
+
+const priorityColors = {
+  'Critical': 'text-red-600 font-bold',
+  'High':     'text-orange-500 font-semibold',
+  'Medium':   'text-yellow-600',
+  'Low':      'text-gray-500',
 }
 
 export default function ListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [searchText, setSearchText] = useState(searchParams.get('search') || '')
-  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '')
-  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '')
-  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '')
-  const [records, setRecords] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [sortField, setSortField] = useState('createdAt')
-  const [sortDir, setSortDir] = useState('desc')
-  const [page, setPage] = useState(1)
-  const ITEMS_PER_PAGE = 5
+  const [searchText,   setSearchText]   = useState(searchParams.get('search')   || '')
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status')   || '')
+  const [dateFrom,     setDateFrom]     = useState(searchParams.get('dateFrom') || '')
+  const [dateTo,       setDateTo]       = useState(searchParams.get('dateTo')   || '')
+  const [records,      setRecords]      = useState([])
+  const [totalElements, setTotalElements] = useState(0)
+  const [totalPages,   setTotalPages]   = useState(1)
+  const [loading,      setLoading]      = useState(true)
+  const [exporting,    setExporting]    = useState(false)
+  const [sortField,    setSortField]    = useState('createdAt')
+  const [sortDir,      setSortDir]      = useState('desc')
+  const [page,         setPage]         = useState(0)   // 0-indexed to match Spring Page
+  const ITEMS_PER_PAGE = 8
 
   const debounceRef = useRef(null)
 
-  const handleSearchChange = (e) => {
-    const value = e.target.value
-    setSearchText(value)
+  // ── Fetch from mock API (or real API later) ──────────────────────────────
+  const fetchRecords = async () => {
+    setLoading(true)
+    try {
+      const result = await getRecords({
+        page,
+        size: ITEMS_PER_PAGE,
+        search: searchText,
+        status: statusFilter,
+        sortBy: sortField,
+        sortDir,
+      })
+      setRecords(result.content)
+      setTotalElements(result.totalElements)
+      setTotalPages(result.totalPages)
+    } catch (err) {
+      console.error('Failed to fetch records:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchRecords() }, [page, statusFilter, dateFrom, dateTo, sortField, sortDir])
+
+  // debounce search separately so typing doesn't spam requests
+  useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      updateURL({ search: value })
+      setPage(0)
+      fetchRecords()
     }, 300)
-  }
+    return () => clearTimeout(debounceRef.current)
+  }, [searchText])
 
-  const handleStatusChange = (e) => {
-    const value = e.target.value
-    setStatusFilter(value)
-    updateURL({ status: value })
-  }
-
-  const handleDateFrom = (e) => {
-    const value = e.target.value
-    setDateFrom(value)
-    updateURL({ dateFrom: value })
-  }
-
-  const handleDateTo = (e) => {
-    const value = e.target.value
-    setDateTo(value)
-    updateURL({ dateTo: value })
-  }
-
+  // ── URL sync helpers ─────────────────────────────────────────────────────
   const updateURL = (newParams) => {
     const current = {
       search: searchParams.get('search') || '',
@@ -72,71 +82,37 @@ export default function ListPage() {
       dateTo: searchParams.get('dateTo') || '',
       ...newParams,
     }
-    const cleaned = Object.fromEntries(
-      Object.entries(current).filter(([_, v]) => v !== '')
-    )
-    setSearchParams(cleaned)
+    setSearchParams(Object.fromEntries(Object.entries(current).filter(([, v]) => v !== '')))
   }
 
+  const handleSearchChange = (e) => { setSearchText(e.target.value); updateURL({ search: e.target.value }) }
+  const handleStatusChange = (e) => { setStatusFilter(e.target.value); setPage(0); updateURL({ status: e.target.value }) }
+  const handleDateFrom     = (e) => { setDateFrom(e.target.value);   setPage(0); updateURL({ dateFrom: e.target.value }) }
+  const handleDateTo       = (e) => { setDateTo(e.target.value);     setPage(0); updateURL({ dateTo: e.target.value }) }
+
   const clearFilters = () => {
-    setSearchText('')
-    setStatusFilter('')
-    setDateFrom('')
-    setDateTo('')
+    setSearchText(''); setStatusFilter(''); setDateFrom(''); setDateTo(''); setPage(0)
     setSearchParams({})
   }
 
-  useEffect(() => {
-    setLoading(true)
-    setTimeout(() => {
-      let filtered = [...DUMMY_RECORDS]
-
-      if (searchText) {
-        filtered = filtered.filter(r =>
-          r.title.toLowerCase().includes(searchText.toLowerCase()) ||
-          r.category.toLowerCase().includes(searchText.toLowerCase())
-        )
-      }
-
-      if (statusFilter) {
-        filtered = filtered.filter(r => r.status === statusFilter)
-      }
-
-      if (dateFrom) {
-        filtered = filtered.filter(r => r.createdAt >= dateFrom)
-      }
-
-      if (dateTo) {
-        filtered = filtered.filter(r => r.createdAt <= dateTo)
-      }
-
-      filtered.sort((a, b) => {
-        if (a[sortField] < b[sortField]) return sortDir === 'asc' ? -1 : 1
-        if (a[sortField] > b[sortField]) return sortDir === 'asc' ? 1 : -1
-        return 0
-      })
-
-      setRecords(filtered)
-      setPage(1)
-      setLoading(false)
-    }, 1500) // ← 1.5s delay so skeleton is visible
-  }, [searchText, statusFilter, dateFrom, dateTo, sortField, sortDir])
-
   const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDir('asc')
-    }
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortField(field); setSortDir('asc') }
+    setPage(0)
   }
 
-  const paginated = records.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
-  const totalPages = Math.ceil(records.length / ITEMS_PER_PAGE)
-  const hasActiveFilters = searchText || statusFilter || dateFrom || dateTo
+  const handleExport = async () => {
+    setExporting(true)
+    try { await exportCSV({ status: statusFilter }) }
+    catch (e) { console.error('Export failed:', e) }
+    finally { setExporting(false) }
+  }
 
-  // ── Show skeleton while loading ──────────────────────────────────────────
-  if (loading) {
+  const hasActiveFilters = searchText || statusFilter || dateFrom || dateTo
+  const displayPage = page + 1  // show 1-indexed to user
+
+  // ── Loading skeleton ─────────────────────────────────────────────────────
+  if (loading && records.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 p-8">
         <div className="flex justify-between items-center mb-6">
@@ -150,22 +126,31 @@ export default function ListPage() {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <TableSkeleton rows={6} cols={6} />
+          <TableSkeleton rows={8} cols={6} />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#1B4F8A]">All Records</h1>
-          <p className="text-sm text-gray-500 mt-1">{records.length} record{records.length !== 1 ? 's' : ''} found</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {loading ? 'Refreshing...' : `${totalElements} record${totalElements !== 1 ? 's' : ''} found`}
+          </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="border border-gray-300 text-gray-600 px-3 py-2 rounded hover:bg-gray-50 text-sm disabled:opacity-50"
+          >
+            {exporting ? 'Exporting…' : '↓ CSV'}
+          </button>
           <button
             onClick={() => navigate('/')}
             className="border border-gray-300 text-gray-600 px-4 py-2 rounded hover:bg-gray-50 text-sm"
@@ -184,14 +169,13 @@ export default function ListPage() {
       {/* Search + Filter Bar */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
         <div className="flex flex-wrap gap-3 items-end">
-
           <div className="flex-1 min-w-[200px]">
             <label className="text-xs text-gray-400 uppercase mb-1 block">Search</label>
             <input
               type="text"
               value={searchText}
               onChange={handleSearchChange}
-              placeholder="Search by title or category..."
+              placeholder="Search by title, category, assignee..."
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </div>
@@ -204,37 +188,28 @@ export default function ListPage() {
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
             >
               <option value="">All Statuses</option>
-              <option value="Completed">Completed</option>
+              <option value="Active">Active</option>
               <option value="In Progress">In Progress</option>
-              <option value="Not Started">Not Started</option>
+              <option value="Completed">Completed</option>
+              <option value="Blocked">Blocked</option>
             </select>
           </div>
 
           <div className="min-w-[150px]">
             <label className="text-xs text-gray-400 uppercase mb-1 block">Date From</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={handleDateFrom}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
+            <input type="date" value={dateFrom} onChange={handleDateFrom}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
           </div>
 
           <div className="min-w-[150px]">
             <label className="text-xs text-gray-400 uppercase mb-1 block">Date To</label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={handleDateTo}
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
+            <input type="date" value={dateTo} onChange={handleDateTo}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
           </div>
 
           {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="text-sm text-red-500 hover:text-red-700 px-3 py-2 border border-red-200 rounded hover:bg-red-50"
-            >
+            <button onClick={clearFilters}
+              className="text-sm text-red-500 hover:text-red-700 px-3 py-2 border border-red-200 rounded hover:bg-red-50">
               Clear Filters
             </button>
           )}
@@ -243,91 +218,77 @@ export default function ListPage() {
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              {['title', 'category', 'status', 'priority', 'createdAt'].map(field => (
-                <th
-                  key={field}
-                  onClick={() => handleSort(field)}
-                  className="text-left px-6 py-3 text-xs text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
-                >
-                  {field === 'createdAt' ? 'Created At' : field.charAt(0).toUpperCase() + field.slice(1)}
-                  {sortField === field ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕'}
-                </th>
-              ))}
-              <th className="text-left px-6 py-3 text-xs text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* ── Empty state ── */}
-            {paginated.length === 0 ? (
+        {loading ? (
+          <div className="p-6"><TableSkeleton rows={8} cols={6} /></div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b">
               <tr>
-                <td colSpan={6} className="py-12">
-                  <EmptyState
-                    variant={hasActiveFilters ? 'no-results' : 'no-data'}
-                    body={hasActiveFilters
-                      ? `No records match your filters. Try clearing them.`
-                      : 'No records yet. Create your first one!'}
-                    action={hasActiveFilters
-                      ? { label: 'Clear Filters', onClick: clearFilters }
-                      : { label: '+ New Record', onClick: () => navigate('/create') }
-                    }
-                  />
-                </td>
+                {[
+                  { field: 'title',     label: 'Title' },
+                  { field: 'category',  label: 'Category' },
+                  { field: 'status',    label: 'Status' },
+                  { field: 'priority',  label: 'Priority' },
+                  { field: 'assignedTo',label: 'Assigned To' },
+                  { field: 'createdAt', label: 'Created At' },
+                ].map(({ field, label }) => (
+                  <th key={field} onClick={() => handleSort(field)}
+                    className="text-left px-6 py-3 text-xs text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none">
+                    {label}{sortField === field ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕'}
+                  </th>
+                ))}
+                <th className="text-left px-6 py-3 text-xs text-gray-500 uppercase">Actions</th>
               </tr>
-            ) : (
-              paginated.map(record => (
-                <tr key={record.id} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-800">{record.title}</td>
-                  <td className="px-6 py-4 text-gray-600">{record.category}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColors[record.status]}`}>
-                      {record.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600">{record.priority}</td>
-                  <td className="px-6 py-4 text-gray-600">{record.createdAt}</td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => navigate(`/records/${record.id}`)}
-                      className="text-blue-600 hover:underline mr-3"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => navigate(`/edit/${record.id}`)}
-                      className="text-gray-500 hover:underline"
-                    >
-                      Edit
-                    </button>
+            </thead>
+            <tbody>
+              {records.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12">
+                    <EmptyState
+                      variant={hasActiveFilters ? 'no-results' : 'no-data'}
+                      body={hasActiveFilters ? 'No records match your filters. Try clearing them.' : 'No records yet. Create your first one!'}
+                      action={hasActiveFilters
+                        ? { label: 'Clear Filters', onClick: clearFilters }
+                        : { label: '+ New Record', onClick: () => navigate('/create') }}
+                    />
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                records.map(record => (
+                  <tr key={record.id} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-4 font-medium text-gray-800 max-w-[220px] truncate">{record.title}</td>
+                    <td className="px-6 py-4 text-gray-600">{record.category}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColors[record.status] || 'bg-gray-100 text-gray-700'}`}>
+                        {record.status}
+                      </span>
+                    </td>
+                    <td className={`px-6 py-4 text-xs ${priorityColors[record.priority] || ''}`}>{record.priority}</td>
+                    <td className="px-6 py-4 text-gray-600">{record.assignedTo}</td>
+                    <td className="px-6 py-4 text-gray-500">{record.createdAt?.split('T')[0]}</td>
+                    <td className="px-6 py-4">
+                      <button onClick={() => navigate(`/records/${record.id}`)}
+                        className="text-blue-600 hover:underline mr-3">View</button>
+                      <button onClick={() => navigate(`/edit/${record.id}`)}
+                        className="text-gray-500 hover:underline">Edit</button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
-          <span>Page {page} of {totalPages}</span>
+          <span>Page {displayPage} of {totalPages} ({totalElements} records)</span>
           <div className="flex gap-2">
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-3 py-1 border rounded disabled:opacity-40 hover:bg-gray-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="px-3 py-1 border rounded disabled:opacity-40 hover:bg-gray-50"
-            >
-              Next
-            </button>
+            <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
+              className="px-3 py-1 border rounded disabled:opacity-40 hover:bg-gray-50">Previous</button>
+            <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page === totalPages - 1}
+              className="px-3 py-1 border rounded disabled:opacity-40 hover:bg-gray-50">Next</button>
           </div>
         </div>
       )}

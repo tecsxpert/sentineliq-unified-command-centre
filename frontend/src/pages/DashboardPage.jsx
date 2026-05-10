@@ -5,21 +5,7 @@ import {
   Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
 import { CardGridSkeleton, ChartSkeleton } from '../components/Skeleton'
-
-const DUMMY_STATS = {
-  total: 24,
-  completed: 8,
-  inProgress: 10,
-  notStarted: 6,
-}
-
-const DUMMY_CHART_DATA = [
-  { name: 'Bug', completed: 3, inProgress: 2, notStarted: 1 },
-  { name: 'Feature', completed: 2, inProgress: 4, notStarted: 2 },
-  { name: 'DevOps', completed: 1, inProgress: 2, notStarted: 1 },
-  { name: 'Security', completed: 1, inProgress: 1, notStarted: 1 },
-  { name: 'Docs', completed: 1, inProgress: 1, notStarted: 1 },
-]
+import { getStats } from '../services/api'   // ← ONLY change from before
 
 export default function DashboardPage() {
   const navigate = useNavigate()
@@ -34,13 +20,18 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     setLoading(true)
     try {
-      setTimeout(() => {
-        setStats(DUMMY_STATS)
-        setChartData(DUMMY_CHART_DATA)
-        setLoading(false)
-      }, 800)
+      const data = await getStats()
+      setStats(data)
+
+      // Build chart data from byCategory + byStatus breakdown
+      const chartRows = Object.entries(data.byCategory).map(([name, total]) => ({
+        name,
+        Total: total,
+      }))
+      setChartData(chartRows)
     } catch (error) {
       console.error('Failed to fetch stats:', error)
+    } finally {
       setLoading(false)
     }
   }
@@ -80,15 +71,15 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          <KPICard title="Total Records" value={stats?.total} color="border-blue-500" />
-          <KPICard title="Completed" value={stats?.completed} color="border-green-500" />
-          <KPICard title="In Progress" value={stats?.inProgress} color="border-yellow-500" />
-          <KPICard title="Not Started" value={stats?.notStarted} color="border-gray-400" />
+          <KPICard title="Total Records"  value={stats?.total}      color="border-blue-500"   />
+          <KPICard title="Active"         value={stats?.active}     color="border-indigo-500" />
+          <KPICard title="Completed"      value={stats?.completed}  color="border-green-500"  />
+          <KPICard title="Blocked"        value={stats?.blocked}    color="border-red-500"    />
         </div>
       )}
 
-      {/* Bar Chart */}
-      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+      {/* Bar Chart — records by category */}
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
         <h2 className="text-base sm:text-lg font-semibold text-gray-700 mb-4 sm:mb-6">
           Records by Category
         </h2>
@@ -102,9 +93,27 @@ export default function DashboardPage() {
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
               <Legend wrapperStyle={{ fontSize: '12px' }} />
-              <Bar dataKey="completed" name="Completed" fill="#22c55e" />
-              <Bar dataKey="inProgress" name="In Progress" fill="#eab308" />
-              <Bar dataKey="notStarted" name="Not Started" fill="#9ca3af" />
+              <Bar dataKey="Total" fill="#1B4F8A" />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Monthly Trend Chart */}
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-700 mb-4 sm:mb-6">
+          Monthly Trend
+        </h2>
+        {loading ? (
+          <ChartSkeleton height={200} />
+        ) : (
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={stats?.monthlyTrend} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Bar dataKey="count" name="Records" fill="#22c55e" />
             </BarChart>
           </ResponsiveContainer>
         )}
